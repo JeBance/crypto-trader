@@ -68,9 +68,11 @@ bash run.sh
 
 ## ⚙️ Быстрый старт
 
-### 📖 Полная инструкция
+### 📖 Документация
 
-📦 **Подробная инструкция по установке:** [docs/INSTALL.md](docs/INSTALL.md)
+- 📦 [Полная инструкция по установке](docs/INSTALL.md)
+- 🌐 [Руководство пользователя](docs/USER_GUIDE.md) — работа через UI
+- 🔄 [Self-Healing Server](docs/SELF_HEALING_SERVER.md)
 
 ---
 
@@ -81,48 +83,37 @@ git clone https://github.com/JeBance/crypto-trader.git
 cd crypto-trader
 ```
 
-### 2. Автоматическая установка (рекомендуется)
+### 2. Запуск (автоматическая установка)
 
-**Одна команда установит всё:**
-
-```bash
-bash setup.sh
-```
-
-**Что сделает setup.sh:**
-- ✅ Проверит Python, Git, Node.js
-- ✅ Установит отсутствующие пакеты
-- ✅ Создаст виртуальное окружение
-- ✅ Установит Python зависимости
-- ✅ Установит Frontend зависимости
-- ✅ Создаст .env и config.yaml
-
-**Опции:**
-```bash
-# Полная переустановка
-bash setup.sh --force
-
-# Без frontend
-bash setup.sh --no-frontend
-
-# Пропустить системные пакеты
-bash setup.sh --skip-packages
-```
-
-### 3. Запуск сервера
+**Сервер запустится даже без .env!**
 
 ```bash
-# Простой запуск (setup запустится автоматически если нужно)
 bash run.sh
-
-# Debug режим
-bash run.sh --debug
-
-# Только установка без запуска
-bash run.sh --setup
 ```
 
-### 4. Ручная установка (если auto не работает)
+**Что произойдёт:**
+- ✅ Проверка зависимостей
+- ✅ Авто-установка (если нужно)
+- ✅ Создание `.env` с дефолтными значениями
+- ✅ Запуск сервера
+
+### 3. Открыть в браузере
+
+```
+http://localhost:3000      # Frontend UI
+http://localhost:8000      # Backend API
+http://localhost:8000/docs # API документация (Swagger)
+```
+
+### 4. Настройка через UI
+
+1. Откройте `http://localhost:3000/settings`
+2. Добавьте API ключи (если нужно)
+3. Включите стратегии на `http://localhost:3000/strategies`
+
+---
+
+### 5. Ручная установка (если auto не работает)
 
 ```bash
 # Termux
