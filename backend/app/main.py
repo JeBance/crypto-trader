@@ -9,6 +9,9 @@ Environment variables:
     PORT - Server port (default: 8000)
     APP_ENV - Environment (development/production)
     APP_DEBUG - Debug mode (true/false)
+
+Note: Application works without .env file using default values.
+      Configure API keys via Settings page or .env file.
 """
 
 import logging
@@ -48,14 +51,76 @@ class AppState:
 app_state = AppState()
 
 
+def create_default_env() -> None:
+    """Create default .env file if it doesn't exist."""
+    env_path = Path(__file__).parent.parent.parent / ".env"
+    
+    if not env_path.exists():
+        logger.info("Creating default .env file...")
+        
+        default_env = """# Crypto Trader Configuration
+# Generated automatically - edit to add your API keys
+
+# Application
+APP_ENV=development
+APP_DEBUG=true
+APP_LOG_LEVEL=INFO
+
+# Server
+HOST=0.0.0.0
+PORT=8000
+
+# Database
+DATABASE_URL=sqlite+aiosqlite:///./data/crypto_trader.db
+
+# Security (change in production!)
+API_KEY=crypto-trader-default-key-change-in-production
+SECRET_KEY=crypto-trader-default-secret-change-in-production
+
+# Trading Mode (paper = demo, live = real)
+TRADING_MODE=paper
+
+# Binance API (get from https://www.binance.com/en/my/settings/api-management)
+# Leave empty to skip Binance initialization
+BINANCE_API_KEY=
+BINANCE_API_SECRET=
+BINANCE_TESTNET=true
+
+# Bybit API (get from https://testnet.bybit.com/app/user/api-management)
+# Leave empty to skip Bybit initialization
+BYBIT_API_KEY=
+BYBIT_API_SECRET=
+BYBIT_TESTNET=true
+
+# Telegram Bot (get from @BotFather)
+# Leave empty to skip Telegram notifications
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+
+# Risk Management
+MAX_POSITION_SIZE_PERCENT=10
+STOP_LOSS_PERCENT=2
+TAKE_PROFIT_PERCENT=4
+DAILY_LOSS_LIMIT_PERCENT=5
+"""
+        
+        try:
+            env_path.write_text(default_env)
+            logger.info(f"Created .env file at {env_path}")
+        except Exception as e:
+            logger.warning(f"Failed to create .env file: {e}")
+            logger.warning("Application will use default values")
+
+
 async def initialize_plugins() -> None:
     """Initialize all plugins from configuration."""
     logger.info("Initializing plugins...")
     
     plugin_manager = PluginManager()
+    exchanges_loaded = 0
     
-    # Load exchange plugins
-    if settings.BINANCE_API_KEY:
+    # Load exchange plugins (only if API keys provided)
+    if settings.BINANCE_API_KEY and settings.BINANCE_API_SECRET:
         try:
             from app.exchanges.binance import BinanceExchange
             exchange = BinanceExchange(
@@ -65,11 +130,14 @@ async def initialize_plugins() -> None:
             )
             await exchange.initialize()
             plugin_manager.register(exchange)
-            logger.info("Binance exchange initialized")
+            logger.info("✅ Binance exchange initialized")
+            exchanges_loaded += 1
         except Exception as e:
             logger.error(f"Failed to initialize Binance: {e}")
+    else:
+        logger.info("⚠️  Binance not configured (API keys not set)")
     
-    if settings.BYBIT_API_KEY:
+    if settings.BYBIT_API_KEY and settings.BYBIT_API_SECRET:
         try:
             from app.exchanges.bybit import BybitExchange
             exchange = BybitExchange(
@@ -79,9 +147,12 @@ async def initialize_plugins() -> None:
             )
             await exchange.initialize()
             plugin_manager.register(exchange)
-            logger.info("Bybit exchange initialized")
+            logger.info("✅ Bybit exchange initialized")
+            exchanges_loaded += 1
         except Exception as e:
             logger.error(f"Failed to initialize Bybit: {e}")
+    else:
+        logger.info("⚠️  Bybit not configured (API keys not set)")
     
     # Load strategy plugins
     try:
@@ -93,12 +164,12 @@ async def initialize_plugins() -> None:
         )
         await rsi_strategy.initialize()
         plugin_manager.register(rsi_strategy)
-        logger.info("RSI strategy initialized")
+        logger.info("✅ RSI strategy initialized")
     except Exception as e:
         logger.error(f"Failed to initialize RSI strategy: {e}")
     
     # Load notifier plugins
-    if settings.TELEGRAM_BOT_TOKEN:
+    if settings.TELEGRAM_BOT_TOKEN and settings.TELEGRAM_CHAT_ID:
         try:
             from app.notifications.telegram import TelegramNotifier
             notifier = TelegramNotifier(
@@ -107,9 +178,11 @@ async def initialize_plugins() -> None:
             )
             await notifier.initialize()
             plugin_manager.register(notifier)
-            logger.info("Telegram notifier initialized")
+            logger.info("✅ Telegram notifier initialized")
         except Exception as e:
             logger.error(f"Failed to initialize Telegram notifier: {e}")
+    else:
+        logger.info("⚠️  Telegram not configured (bot token or chat ID not set)")
     
     # Store in app state
     app_state.plugin_manager = plugin_manager
@@ -121,7 +194,14 @@ async def initialize_plugins() -> None:
     if plugin_manager.notifier_plugins:
         app_state.notifier = list(plugin_manager.notifier_plugins.values())[0]
     
-    logger.info(f"Initialized {len(plugin_manager.all_plugins)} plugins")
+    # Log summary
+    if exchanges_loaded == 0:
+        logger.warning("⚠️  No exchanges configured - trading will be disabled")
+        logger.info("📖 Add API keys to .env file or use Settings page")
+    else:
+        logger.info(f"✅ {exchanges_loaded} exchange(s) configured")
+    
+    logger.info(f"✅ Initialized {len(plugin_manager.all_plugins)} plugins")
 
 
 async def initialize_services() -> None:
@@ -164,41 +244,45 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("🚀 Crypto Trader starting up...")
     
+    # Create default .env if not exists
+    create_default_env()
+
     try:
         # Initialize database
         await init_db()
         logger.info("✅ Database initialized")
-        
+
         # Initialize plugins
         await initialize_plugins()
-        
+
         # Initialize services
         await initialize_services()
-        
+
         # Publish system started event
         await publish(
             EventType.SYSTEM_STARTED,
-            {"version": "0.1.0"},
+            {"version": "0.2.0"},
             source="main",
         )
-        
+
         logger.info("✅ Crypto Trader ready!")
-        
+        logger.info("📖 Open http://localhost:8000/docs for API documentation")
+
     except Exception as e:
         logger.error(f"Startup error: {e}")
         raise
-    
+
     yield
-    
+
     # Shutdown
     logger.info("👋 Crypto Trader shutting down...")
-    
+
     await publish(
         EventType.SYSTEM_STOPPED,
         {},
         source="main",
     )
-    
+
     await cleanup_plugins()
 
 

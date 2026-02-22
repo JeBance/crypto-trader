@@ -29,26 +29,26 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite+aiosqlite:///./data/crypto_trader.db"
     
     # Security
-    API_KEY: str = "change-me-in-production"
-    SECRET_KEY: str = "change-me-in-production"
+    API_KEY: str = "crypto-trader-default-key-change-in-production"
+    SECRET_KEY: str = "crypto-trader-default-secret-change-in-production"
     
-    # Binance
+    # Binance (optional - defaults to testnet)
     BINANCE_API_KEY: str = ""
     BINANCE_API_SECRET: str = ""
     BINANCE_TESTNET: bool = True
     
-    # Bybit
+    # Bybit (optional - defaults to testnet)
     BYBIT_API_KEY: str = ""
     BYBIT_API_SECRET: str = ""
     BYBIT_TESTNET: bool = True
     
-    # OKX
+    # OKX (optional)
     OKX_API_KEY: str = ""
     OKX_API_SECRET: str = ""
     OKX_API_PASSPHRASE: str = ""
     OKX_TESTNET: bool = True
     
-    # Telegram
+    # Telegram (optional)
     TELEGRAM_BOT_TOKEN: str = ""
     TELEGRAM_CHAT_ID: str = ""
     
@@ -80,6 +80,26 @@ class Settings(BaseSettings):
     def logs_dir(self) -> Path:
         """Get logs directory."""
         return self.project_root / "logs"
+    
+    @property
+    def exchanges_configured(self) -> dict:
+        """Check which exchanges are configured."""
+        return {
+            "binance": bool(self.BINANCE_API_KEY and self.BINANCE_API_SECRET),
+            "bybit": bool(self.BYBIT_API_KEY and self.BYBIT_API_SECRET),
+            "okx": bool(self.OKX_API_KEY and self.OKX_API_SECRET and self.OKX_API_PASSPHRASE),
+        }
+    
+    @property
+    def telegram_configured(self) -> bool:
+        """Check if Telegram is configured."""
+        return bool(self.TELEGRAM_BOT_TOKEN and self.TELEGRAM_CHAT_ID)
+    
+    @property
+    def is_fully_configured(self) -> bool:
+        """Check if application is fully configured."""
+        # At least one exchange should be configured for trading
+        return any(self.exchanges_configured.values())
 
 
 settings = Settings()

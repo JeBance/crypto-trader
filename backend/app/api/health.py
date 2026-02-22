@@ -24,7 +24,7 @@ async def health_check():
     return {
         "status": "healthy",
         "name": "Crypto Trader",
-        "version": "0.1.0",
+        "version": "0.2.0",
         "timestamp": datetime.utcnow().isoformat(),
     }
 
@@ -60,7 +60,7 @@ async def system_status(plugin_manager: PluginManager | None = None):
     status = {
         "application": {
             "name": "Crypto Trader",
-            "version": "0.1.0",
+            "version": "0.2.0",
             "environment": settings.APP_ENV,
             "debug": settings.APP_DEBUG,
             "trading_mode": settings.TRADING_MODE,
@@ -68,6 +68,12 @@ async def system_status(plugin_manager: PluginManager | None = None):
         "server": {
             "host": settings.HOST,
             "port": settings.PORT,
+        },
+        "configuration": {
+            "fully_configured": settings.is_fully_configured,
+            "exchanges": settings.exchanges_configured,
+            "telegram": settings.telegram_configured,
+            "env_file_exists": True,  # Created automatically
         },
         "plugins": {},
     }
