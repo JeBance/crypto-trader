@@ -47,17 +47,26 @@ const Server: React.FC = () => {
 
     try {
       setRestarting(true)
-      await api.restartServer()
-      setMessage({ type: 'success', text: 'Перезапуск сервера инициирован...' })
+      setMessage({ type: 'info', text: 'Перезапуск сервера инициирован. Страница будет перезапущена через 5 секунд...' })
       
-      // Wait for restart
+      // Отправляем запрос на перезапуск
+      await api.restartServer()
+      
+      // Ждем перезапуска и обновляем страницу
       setTimeout(() => {
         window.location.reload()
       }, 5000)
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Ошибка при перезапуске сервера' })
-    } finally {
-      setRestarting(false)
+    } catch (error: any) {
+      // Игнорируем ошибку соединения - сервер перезапустился
+      if (error.message?.includes('fetch') || error.message?.includes('network')) {
+        setMessage({ type: 'success', text: 'Сервер перезапускается. Перезагрузка страницы...' })
+        setTimeout(() => {
+          window.location.reload()
+        }, 3000)
+      } else {
+        setMessage({ type: 'error', text: 'Ошибка при перезапуске сервера' })
+        setRestarting(false)
+      }
     }
   }
 
@@ -66,17 +75,26 @@ const Server: React.FC = () => {
 
     try {
       setUpdating(true)
-      await api.updateServer()
-      setMessage({ type: 'success', text: 'Обновление загружается. Сервер будет перезапущен автоматически.' })
+      setMessage({ type: 'success', text: 'Обновление загружается. Сервер будет перезапущен автоматически через 10 секунд...' })
       
-      // Wait for update and restart
+      // Отправляем запрос на обновление
+      await api.updateServer()
+      
+      // Ждем обновления и перезапуска
       setTimeout(() => {
         window.location.reload()
       }, 10000)
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Ошибка при обновлении сервера' })
-    } finally {
-      setUpdating(false)
+    } catch (error: any) {
+      // Игнорируем ошибку соединения - сервер перезапустился после обновления
+      if (error.message?.includes('fetch') || error.message?.includes('network')) {
+        setMessage({ type: 'success', text: 'Обновление завершено. Сервер перезапускается...' })
+        setTimeout(() => {
+          window.location.reload()
+        }, 5000)
+      } else {
+        setMessage({ type: 'error', text: 'Ошибка при обновлении сервера' })
+        setUpdating(false)
+      }
     }
   }
 
