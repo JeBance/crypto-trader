@@ -2,11 +2,12 @@
 # ===========================================
 # Crypto Trader - Self-Healing Server Runner
 # ===========================================
-# This script runs the server with automatic
-# restart on crash and log display.
+# Этот скрипт запускает сервер с автоматической
+# проверкой и установкой зависимостей.
 #
-# Usage:
+# Использование:
 #   bash run.sh [--debug] [--no-auto-update]
+#   bash run.sh --setup    # Только установка
 # ===========================================
 
 set -e
@@ -16,6 +17,8 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+WHITE='\033[1;37m'
 NC='\033[0m' # No Color
 
 # Configuration
@@ -29,11 +32,22 @@ RESTART_WINDOW=300  # 5 minutes
 # Array to store restart times
 declare -a RESTART_TIMES=()
 
+# Setup flag
+RUN_SETUP=false
+
 # Ensure directories exist
 mkdir -p "$PROJECT_ROOT/logs"
 mkdir -p "$PROJECT_ROOT/data"
 
 # Function to print colored output
+print_header() {
+    echo ""
+    echo -e "${CYAN}============================================================${NC}"
+    echo -e "${CYAN}$1${NC}"
+    echo -e "${CYAN}============================================================${NC}"
+    echo ""
+}
+
 print_info() {
     echo -e "${BLUE}[INFO]${NC} $(date '+%Y-%m-%d %H:%M:%S') - $1"
 }
@@ -57,34 +71,40 @@ check_python() {
     elif command -v python &> /dev/null; then
         PYTHON_CMD="python"
     else
-        print_error "Python not found! Please install Python 3.10+"
+        print_error "Python не найден! Установите Python 3.10+"
         exit 1
     fi
     
-    print_info "Using Python: $($PYTHON_CMD --version)"
+    print_info "Python: $($PYTHON_CMD --version)"
 }
 
 # Function to check if virtual environment exists
 check_venv() {
     if [ -d "$PROJECT_ROOT/venv" ]; then
-        print_info "Virtual environment found"
+        print_info "Виртуальное окружение найдено"
         source "$PROJECT_ROOT/venv/bin/activate"
     else
-        print_warning "Virtual environment not found, using system Python"
+        print_warning "Виртуальное окружение не найдено"
     fi
 }
 
 # Function to check dependencies
 check_dependencies() {
-    print_info "Checking dependencies..."
+    print_info "Проверка зависимостей..."
+    
+    # Check if venv is active
+    if [ -z "$VIRTUAL_ENV" ]; then
+        print_warning "Виртуальное окружение не активно"
+        return 1
+    fi
     
     # Check critical packages
     $PYTHON_CMD -c "import fastapi" 2>/dev/null || {
-        print_warning "FastAPI not installed, installing dependencies..."
+        print_warning "FastAPI не установлен, установка..."
         pip install -r "$PROJECT_ROOT/backend/requirements.txt"
     }
     
-    print_success "Dependencies OK"
+    print_success "Зависимости установлены"
 }
 
 # Function to clean old restart times
@@ -188,19 +208,20 @@ show_status() {
 show_help() {
     echo "Crypto Trader Server Runner"
     echo ""
-    echo "Usage: $0 [OPTIONS]"
+    echo "Использование: $0 [OPTIONS]"
     echo ""
-    echo "Options:"
-    echo "  --debug           Enable debug mode"
-    echo "  --no-auto-update  Disable automatic updates"
-    echo "  --status          Show server status"
-    echo "  --help            Show this help message"
+    echo "Опции:"
+    echo "  --debug           Включить debug режим"
+    echo "  --no-auto-update  Отключить авто-обновление"
+    echo "  --setup           Запустить установку зависимостей"
+    echo "  --status          Показать статус сервера"
+    echo "  --help            Показать эту справку"
     echo ""
-    echo "Examples:"
-    echo "  $0                          # Normal start"
-    echo "  $0 --debug                  # Debug mode"
-    echo "  $0 --no-auto-update         # Disable auto-update"
-    echo "  $0 --debug --no-auto-update # Both options"
+    echo "Примеры:"
+    echo "  $0                          # Обычный запуск"
+    echo "  $0 --debug                  # Debug режим"
+    echo "  $0 --setup                  # Только установка"
+    echo "  $0 --no-auto-update         # Без авто-обновления"
     echo ""
 }
 
@@ -211,7 +232,7 @@ main() {
     echo "🚀 Crypto Trader - Self-Healing Server"
     echo "=" | awk '{for(i=1;i<=60;i++)printf "="; print ""}'
     echo ""
-    
+
     # Parse arguments
     SERVER_ARGS=""
     
@@ -225,6 +246,10 @@ main() {
                 SERVER_ARGS="$SERVER_ARGS --no-auto-update"
                 shift
                 ;;
+            --setup)
+                RUN_SETUP=true
+                shift
+                ;;
             --status)
                 check_python
                 check_venv
@@ -236,12 +261,25 @@ main() {
                 exit 0
                 ;;
             *)
-                print_error "Unknown option: $1"
+                print_error "Неизвестная опция: $1"
                 show_help
                 exit 1
                 ;;
         esac
     done
+    
+    # Run setup if requested or if first run
+    if [ "$RUN_SETUP" = true ] || [ ! -d "$PROJECT_ROOT/venv" ]; then
+        print_header "📦 Проверка зависимостей"
+        
+        if [ -f "$PROJECT_ROOT/setup.sh" ]; then
+            print_info "Запуск установки зависимостей..."
+            bash "$PROJECT_ROOT/setup.sh" --skip-packages
+            print_success "Установка завершена"
+        else
+            print_warning "setup.sh не найден, пропускаем установку"
+        fi
+    fi
     
     # Run pre-checks
     check_python
