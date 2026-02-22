@@ -285,9 +285,46 @@ class Server:
         """Restart the application."""
         logger = logging.getLogger(__name__)
         logger.info("Restarting application...")
-        
+
         # Re-exec the current script
         os.execv(sys.executable, [sys.executable, __file__] + sys.argv[1:])
+
+    async def run(self):
+        """Run the server with restart support."""
+        while True:
+            try:
+                await self.initialize()
+                await self.start()
+                
+                # Wait for shutdown or restart signal
+                await self.wait_for_shutdown()
+                
+                # Check if restart was requested
+                if self._restart_pending:
+                    logger.info("Restart requested, restarting...")
+                    self._restart_pending = False
+                    await self.cleanup()
+                    continue
+                else:
+                    break
+                    
+            except Exception as e:
+                logger.error(f"Server error: {e}")
+                if self.debug:
+                    import traceback
+                    traceback.print_exc()
+                
+                # Auto-restart on crash
+                logger.info("Auto-restarting in 5 seconds...")
+                await asyncio.sleep(5)
+                await self.cleanup()
+                continue
+        
+        await self.cleanup()
+
+    async def wait_for_shutdown(self):
+        """Wait for shutdown or restart signal."""
+        await self.shutdown_event.wait()
     
     async def shutdown(self):
         """Graceful shutdown."""
@@ -327,16 +364,15 @@ async def main():
     # Parse arguments
     debug = "--debug" in sys.argv
     no_auto_update = "--no-auto-update" in sys.argv
-    
+
     # Setup logging
     logger = setup_logging(debug)
-    
+
     # Create and run server
     server = Server(debug=debug, auto_update=not no_auto_update)
-    
+
     try:
-        await server.initialize()
-        await server.start()
+        await server.run()
     except KeyboardInterrupt:
         logger.info("Interrupted by user")
     except Exception as e:

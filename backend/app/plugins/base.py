@@ -1,9 +1,12 @@
 """Base plugin classes for the plugin system."""
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from app.core.types import Candle, Ticker, Order, OrderRequest, Signal, Balance, AccountInfo
+
+if TYPE_CHECKING:
+    from app.models.position import Position
 
 
 class Plugin(ABC):
@@ -296,11 +299,11 @@ class NotifierPlugin(Plugin):
         message += f"Status: {order.status.value}"
         
         await self.send(message, level="info")
-    
-    async def send_position_notification(self, position: Position, action: str = "opened") -> None:
+
+    async def send_position_notification(self, position: "Position", action: str = "opened") -> None:
         """
         Send position notification.
-        
+
         Args:
             position: Position data
             action: Action type (opened, closed, updated)

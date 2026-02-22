@@ -6,7 +6,6 @@ from datetime import datetime
 from fastapi import APIRouter
 
 from app.config import settings
-from app.plugins.manager import PluginManager
 
 logger = logging.getLogger(__name__)
 
@@ -51,10 +50,10 @@ async def readiness_check():
 
 
 @router.get("/status")
-async def system_status(plugin_manager: PluginManager | None = None):
+async def system_status():
     """
     Detailed system status.
-    
+
     Returns information about all system components.
     """
     status = {
@@ -75,11 +74,9 @@ async def system_status(plugin_manager: PluginManager | None = None):
             "telegram": settings.telegram_configured,
             "env_file_exists": True,  # Created automatically
         },
-        "plugins": {},
+        "plugins": {
+            "status": "Plugin manager not available",
+        },
     }
-    
-    # Add plugin information if manager is available
-    if plugin_manager:
-        status["plugins"] = plugin_manager.get_info()
-    
+
     return status

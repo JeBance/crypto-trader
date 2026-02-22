@@ -16,6 +16,7 @@ Note: Application works without .env file using default values.
 
 import logging
 from contextlib import asynccontextmanager
+from datetime import datetime
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -38,7 +39,7 @@ logger = logging.getLogger(__name__)
 # Global application state
 class AppState:
     """Application state container."""
-    
+
     def __init__(self):
         self.plugin_manager: PluginManager | None = None
         self.exchange: ExchangePlugin | None = None
@@ -46,9 +47,30 @@ class AppState:
         self.strategy_executor = None
         self.data_service = None
         self.db_session = None
+        self.start_time: datetime | None = None
+        self.restart_pending: bool = False
+        self.update_pending: bool = False
 
 
 app_state = AppState()
+_startup_time: datetime | None = None
+
+
+def get_uptime() -> datetime | None:
+    """Get application uptime."""
+    return _startup_time
+
+
+def request_restart():
+    """Request application restart."""
+    app_state.restart_pending = True
+    logger.info("Restart requested")
+
+
+def request_update():
+    """Request application update."""
+    app_state.update_pending = True
+    logger.info("Update requested")
 
 
 def create_default_env() -> None:
@@ -267,9 +289,13 @@ async def cleanup_plugins() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan events."""
+    global _startup_time
+    
     # Startup
     logger.info("🚀 Crypto Trader starting up...")
-    
+    _startup_time = datetime.utcnow()
+    app_state.start_time = _startup_time
+
     # Create default .env if not exists
     create_default_env()
 
@@ -339,13 +365,15 @@ def create_app() -> FastAPI:
     from app.api.orders import router as orders_router
     from app.api.positions import router as positions_router
     from app.api.strategies import router as strategies_router
+    from app.api.server import router as server_router
     from app.websocket.routes import router as websocket_router
-    
+
     app.include_router(health_router)
     app.include_router(config_router)
     app.include_router(orders_router)
     app.include_router(positions_router)
     app.include_router(strategies_router)
+    app.include_router(server_router)
     app.include_router(websocket_router)
     
     # Mount static files (for frontend)

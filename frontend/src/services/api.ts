@@ -75,6 +75,16 @@ export interface HealthStatus {
   timestamp: string
 }
 
+export interface ServerStatus {
+  status: string
+  uptime_seconds: number | null
+  last_restart: string | null
+  last_update: string | null
+  restart_pending: boolean
+  update_pending: boolean
+  version: string
+}
+
 export interface Config {
   app: {
     env: string
@@ -218,6 +228,31 @@ export const api = {
     const response = await fetch(`${API_BASE_URL}/api/strategies/${name}/deactivate`, {
       method: 'POST',
     })
+    return handleResponse(response)
+  },
+
+  // Server Management
+  async getServerStatus(): Promise<ServerStatus> {
+    const response = await fetch(`${API_BASE_URL}/api/server/status`)
+    return handleResponse<ServerStatus>(response)
+  },
+
+  async restartServer(): Promise<Record<string, unknown>> {
+    const response = await fetch(`${API_BASE_URL}/api/server/restart`, {
+      method: 'POST',
+    })
+    return handleResponse(response)
+  },
+
+  async updateServer(): Promise<Record<string, unknown>> {
+    const response = await fetch(`${API_BASE_URL}/api/server/update`, {
+      method: 'POST',
+    })
+    return handleResponse(response)
+  },
+
+  async getServerLogs(lines = 50): Promise<{ logs: string[]; count: number }> {
+    const response = await fetch(`${API_BASE_URL}/api/server/logs?lines=${lines}`)
     return handleResponse(response)
   },
 

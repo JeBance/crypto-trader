@@ -7,6 +7,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp'
 import PsychologyIcon from '@mui/icons-material/Psychology'
 import { api } from '../services/api'
 import { Card, Chip } from '../components/ui'
+import { translations } from '../utils/translations'
 
 interface DashboardStats {
   totalBalance: number
@@ -72,7 +73,7 @@ const Dashboard: React.FC = () => {
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Dashboard
+        {translations.dashboard.title}
       </Typography>
 
       {/* Stats Cards */}
@@ -82,7 +83,7 @@ const Dashboard: React.FC = () => {
             <Box display="flex" alignItems="center" justifyContent="space-between">
               <Box>
                 <Typography color="textSecondary" variant="body2">
-                  Total Balance
+                  {translations.dashboard.totalBalance}
                 </Typography>
                 <Typography variant="h4">
                   ${stats.totalBalance.toLocaleString()}
@@ -98,18 +99,18 @@ const Dashboard: React.FC = () => {
             <Box display="flex" alignItems="center" justifyContent="space-between">
               <Box>
                 <Typography color="textSecondary" variant="body2">
-                  Today P&L
+                  {translations.dashboard.todayPnL}
                 </Typography>
-                <Typography 
-                  variant="h4" 
+                <Typography
+                  variant="h4"
                   color={stats.todayPnL >= 0 ? 'success.main' : 'error.main'}
                 >
                   {stats.todayPnL >= 0 ? '+' : ''}${stats.todayPnL.toFixed(2)}
                 </Typography>
               </Box>
-              <TrendingUpIcon 
-                color={stats.todayPnL >= 0 ? 'success' : 'error'} 
-                sx={{ fontSize: 48, opacity: 0.3 }} 
+              <TrendingUpIcon
+                color={stats.todayPnL >= 0 ? 'success' : 'error'}
+                sx={{ fontSize: 48, opacity: 0.3 }}
               />
             </Box>
           </Card>
@@ -120,7 +121,7 @@ const Dashboard: React.FC = () => {
             <Box display="flex" alignItems="center" justifyContent="space-between">
               <Box>
                 <Typography color="textSecondary" variant="body2">
-                  Active Positions
+                  {translations.dashboard.activePositions}
                 </Typography>
                 <Typography variant="h4">{stats.activePositions}</Typography>
               </Box>
@@ -134,7 +135,7 @@ const Dashboard: React.FC = () => {
             <Box display="flex" alignItems="center" justifyContent="space-between">
               <Box>
                 <Typography color="textSecondary" variant="body2">
-                  Active Strategies
+                  {translations.dashboard.activeStrategies}
                 </Typography>
                 <Typography variant="h4">{stats.activeStrategies}</Typography>
               </Box>
@@ -149,33 +150,33 @@ const Dashboard: React.FC = () => {
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
-              System Status
+              {translations.dashboard.systemStatus}
             </Typography>
             {health ? (
               <Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography variant="body2">Environment</Typography>
-                  <Chip 
-                    label={(health.application as Record<string, string>)?.environment || 'unknown'} 
-                    size="small" 
+                  <Typography variant="body2">{translations.dashboard.environment}</Typography>
+                  <Chip
+                    label={(health.application as Record<string, string>)?.environment || translations.common.loading}
+                    size="small"
                   />
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography variant="body2">Trading Mode</Typography>
-                  <Chip 
-                    label={(health.application as Record<string, string>)?.trading_mode || 'unknown'} 
-                    size="small" 
+                  <Typography variant="body2">{translations.dashboard.tradingMode}</Typography>
+                  <Chip
+                    label={(health.application as Record<string, string>)?.trading_mode || translations.common.loading}
+                    size="small"
                   />
                 </Box>
                 <Box display="flex" justifyContent="space-between">
-                  <Typography variant="body2">Version</Typography>
+                  <Typography variant="body2">{translations.dashboard.version}</Typography>
                   <Typography variant="body2" fontFamily="monospace">
                     v{(health.application as Record<string, string>)?.version || '0.1.0'}
                   </Typography>
                 </Box>
               </Box>
             ) : (
-              <Typography color="textSecondary">No data available</Typography>
+              <Typography color="textSecondary">{translations.dashboard.noData}</Typography>
             )}
           </Paper>
         </Grid>
@@ -183,17 +184,17 @@ const Dashboard: React.FC = () => {
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
-              Quick Actions
+              {translations.dashboard.quickActions}
             </Typography>
             <Box>
               <Typography color="textSecondary" variant="body2">
-                Use the navigation menu to access:
+                {translations.dashboard.useNavigation}
               </Typography>
               <Box mt={2}>
-                <Typography variant="body2">• Positions - View and manage open positions</Typography>
-                <Typography variant="body2">• Orders - View order history</Typography>
-                <Typography variant="body2">• Strategies - Configure trading strategies</Typography>
-                <Typography variant="body2">• Settings - Application settings</Typography>
+                <Typography variant="body2">• {translations.nav.positions} - {translations.dashboard.positionsDesc}</Typography>
+                <Typography variant="body2">• {translations.nav.orders} - {translations.dashboard.ordersDesc}</Typography>
+                <Typography variant="body2">• {translations.nav.strategies} - {translations.dashboard.strategiesDesc}</Typography>
+                <Typography variant="body2">• {translations.nav.settings} - {translations.dashboard.settingsDesc}</Typography>
               </Box>
             </Box>
           </Paper>

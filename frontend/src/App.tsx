@@ -8,6 +8,7 @@ import Positions from './pages/Positions'
 import Orders from './pages/Orders'
 import Strategies from './pages/Strategies'
 import Settings from './pages/Settings'
+import Server from './pages/Server'
 
 const theme = createTheme({
   palette: {
@@ -42,6 +43,7 @@ function App() {
             <Route path="orders" element={<Orders />} />
             <Route path="strategies" element={<Strategies />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="server" element={<Server />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>

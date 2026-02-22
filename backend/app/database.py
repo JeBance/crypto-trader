@@ -1,14 +1,13 @@
 """Database configuration and session management."""
 
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_session
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 from app.config import settings
 
 
-class Base(DeclarativeBase):
-    """Base class for all database models."""
-    pass
+# SQLAlchemy 1.4.x compatibility
+Base = declarative_base()
 
 
 # Create async engine
@@ -18,14 +17,18 @@ engine = create_async_engine(
     future=True,
 )
 
-# Create async session factory
-AsyncSessionLocal = async_sessionmaker(
-    engine,
-    class_=AsyncSession,
-    expire_on_commit=False,
-    autocommit=False,
-    autoflush=False,
-)
+# Create async session factory (SQLAlchemy 1.4.x compatibility)
+def make_session():
+    """Create async session."""
+    return sessionmaker(
+        bind=engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+        autocommit=False,
+        autoflush=False,
+    )
+
+AsyncSessionLocal = make_session()
 
 
 async def get_db() -> AsyncSession:

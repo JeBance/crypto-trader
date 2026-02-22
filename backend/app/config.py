@@ -2,19 +2,19 @@
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
     """Application settings."""
-    
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        case_sensitive=False,
-        extra="ignore",
-    )
+
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+        case_sensitive = False
+        extra = "ignore"
     
     # Application
     APP_ENV: str = "development"
@@ -24,9 +24,12 @@ class Settings(BaseSettings):
     # Server
     HOST: str = "0.0.0.0"
     PORT: int = 8000
-    
-    # Database
-    DATABASE_URL: str = "sqlite+aiosqlite:///./data/crypto_trader.db"
+
+    # Database - use absolute path
+    @property
+    def DATABASE_URL(self) -> str:
+        db_path = self.project_root / "data" / "crypto_trader.db"
+        return f"sqlite+aiosqlite:///{db_path}"
     
     # Security
     API_KEY: str = "crypto-trader-default-key-change-in-production"

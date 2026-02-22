@@ -1,10 +1,11 @@
 /** Settings Page */
 
 import React, { useEffect, useState } from 'react'
-import { Box, Typography, Paper, Grid, Switch, FormControlLabel, Divider, TextField, Button, Alert } from '@mui/material'
+import { Box, Typography, Grid, Switch, FormControlLabel, Divider, Button, Alert, Chip } from '@mui/material'
 import { api, Config } from '../services/api'
 import { Card } from '../components/ui'
 import SaveIcon from '@mui/icons-material/Save'
+import { translations } from '../utils/translations'
 
 const Settings: React.FC = () => {
   const [loading, setLoading] = useState(true)
@@ -35,7 +36,7 @@ const Settings: React.FC = () => {
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <Typography>Loading settings...</Typography>
+        <Typography>{translations.common.loading}</Typography>
       </Box>
     )
   }
@@ -43,19 +44,19 @@ const Settings: React.FC = () => {
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Settings
+        {translations.settings.title}
       </Typography>
 
       {saved && (
         <Alert severity="success" sx={{ mb: 3 }}>
-          Settings saved successfully
+          {translations.settings.saved}
         </Alert>
       )}
 
       <Grid container spacing={3}>
         {/* Application Settings */}
         <Grid item xs={12} md={6}>
-          <Card title="Application">
+          <Card title="Приложение">
             <Box p={2}>
               <FormControlLabel
                 control={
@@ -64,14 +65,14 @@ const Settings: React.FC = () => {
                     disabled
                   />
                 }
-                label="Debug Mode"
+                label="Режим отладки"
               />
               <Box mt={2}>
                 <Typography variant="body2" color="textSecondary">
-                  Environment: <strong>{config?.app.env}</strong>
+                  {translations.dashboard.environment}: <strong>{config?.app.env}</strong>
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
-                  Log Level: <strong>{config?.app.log_level}</strong>
+                  Уровень логов: <strong>{config?.app.log_level}</strong>
                 </Typography>
               </Box>
             </Box>
@@ -80,17 +81,17 @@ const Settings: React.FC = () => {
 
         {/* Trading Settings */}
         <Grid item xs={12} md={6}>
-          <Card title="Trading">
+          <Card title={translations.settings.tradingSettings}>
             <Box p={2}>
               <Typography variant="body2" color="textSecondary" mb={1}>
-                Trading Mode
+                {translations.dashboard.tradingMode}
               </Typography>
               <Chip label={config?.trading.mode} size="small" sx={{ mb: 2 }} />
-              
+
               <Grid container spacing={2}>
                 <Grid item xs={6}>
                   <Typography variant="body2" color="textSecondary">
-                    Max Position Size
+                    {translations.settings.maxPositionSize}
                   </Typography>
                   <Typography variant="h6">
                     {config?.trading.max_position_size_percent}%
@@ -98,7 +99,7 @@ const Settings: React.FC = () => {
                 </Grid>
                 <Grid item xs={6}>
                   <Typography variant="body2" color="textSecondary">
-                    Stop Loss
+                    {translations.settings.stopLoss}
                   </Typography>
                   <Typography variant="h6" color="error.main">
                     {config?.trading.stop_loss_percent}%
@@ -106,7 +107,7 @@ const Settings: React.FC = () => {
                 </Grid>
                 <Grid item xs={6}>
                   <Typography variant="body2" color="textSecondary">
-                    Take Profit
+                    {translations.settings.takeProfit}
                   </Typography>
                   <Typography variant="h6" color="success.main">
                     {config?.trading.take_profit_percent}%
@@ -114,7 +115,7 @@ const Settings: React.FC = () => {
                 </Grid>
                 <Grid item xs={6}>
                   <Typography variant="body2" color="textSecondary">
-                    Daily Loss Limit
+                    {translations.settings.dailyLossLimit}
                   </Typography>
                   <Typography variant="h6" color="warning.main">
                     {config?.trading.daily_loss_limit_percent}%
@@ -127,13 +128,13 @@ const Settings: React.FC = () => {
 
         {/* Exchange Settings */}
         <Grid item xs={12} md={6}>
-          <Card title="Exchanges">
+          <Card title={translations.settings.exchangeSettings}>
             <Box p={2}>
               <Box mb={3}>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                  <Typography variant="subtitle2">Binance</Typography>
-                  <Chip 
-                    label={config?.exchanges.binance.configured ? 'Configured' : 'Not Configured'} 
+                  <Typography variant="subtitle2">{translations.settings.binance}</Typography>
+                  <Chip
+                    label={config?.exchanges.binance.configured ? translations.settings.configured : translations.settings.notConfigured}
                     color={config?.exchanges.binance.configured ? 'success' : 'default'}
                     size="small"
                   />
@@ -147,9 +148,9 @@ const Settings: React.FC = () => {
 
               <Box>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                  <Typography variant="subtitle2">Bybit</Typography>
-                  <Chip 
-                    label={config?.exchanges.bybit.configured ? 'Configured' : 'Not Configured'} 
+                  <Typography variant="subtitle2">{translations.settings.bybit}</Typography>
+                  <Chip
+                    label={config?.exchanges.bybit.configured ? translations.settings.configured : translations.settings.notConfigured}
                     color={config?.exchanges.bybit.configured ? 'success' : 'default'}
                     size="small"
                   />
@@ -164,20 +165,20 @@ const Settings: React.FC = () => {
 
         {/* Notifications */}
         <Grid item xs={12} md={6}>
-          <Card title="Notifications">
+          <Card title={translations.settings.notificationSettings}>
             <Box p={2}>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                 <Typography variant="subtitle2">Telegram</Typography>
-                <Chip 
-                  label={config?.notifications.telegram.configured ? 'Connected' : 'Not Configured'} 
+                <Chip
+                  label={config?.notifications.telegram.configured ? translations.settings.configured : translations.settings.notConfigured}
                   color={config?.notifications.telegram.configured ? 'success' : 'default'}
                   size="small"
                 />
               </Box>
               <Typography variant="body2" color="textSecondary">
-                {config?.notifications.telegram.configured 
-                  ? 'Telegram bot is configured and ready to send notifications'
-                  : 'Configure TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in .env file'
+                {config?.notifications.telegram.configured
+                  ? 'Telegram бот настроен и готов отправлять уведомления'
+                  : 'Настройте TELEGRAM_BOT_TOKEN и TELEGRAM_CHAT_ID в .env файле'
                 }
               </Typography>
             </Box>
@@ -186,12 +187,12 @@ const Settings: React.FC = () => {
 
         {/* Server Info */}
         <Grid item xs={12}>
-          <Card title="Server">
+          <Card title="Сервер">
             <Box p={2}>
               <Grid container spacing={4}>
                 <Grid item xs={6} sm={3}>
                   <Typography variant="body2" color="textSecondary">
-                    Host
+                    Хост
                   </Typography>
                   <Typography variant="h6" fontFamily="monospace">
                     {config?.server.host}
@@ -199,7 +200,7 @@ const Settings: React.FC = () => {
                 </Grid>
                 <Grid item xs={6} sm={3}>
                   <Typography variant="body2" color="textSecondary">
-                    Port
+                    Порт
                   </Typography>
                   <Typography variant="h6" fontFamily="monospace">
                     {config?.server.port}
@@ -212,12 +213,12 @@ const Settings: React.FC = () => {
       </Grid>
 
       <Box mt={4} display="flex" justifyContent="flex-end">
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           startIcon={<SaveIcon />}
           onClick={handleSave}
         >
-          Save Changes
+          {translations.settings.save}
         </Button>
       </Box>
     </Box>

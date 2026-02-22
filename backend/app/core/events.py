@@ -68,7 +68,7 @@ class Event:
 
 
 EventHandler = Callable[[Event], None]
-AsyncEventHandler = Callable[[Event], asyncio.coroutine]
+AsyncEventHandler = Callable[[Event, Any], Any]
 
 
 class EventBus:

@@ -2,15 +2,14 @@
 
 import React from 'react'
 import MUIButton, { ButtonProps as MUIButtonProps } from '@mui/material/Button'
-import MUIInput, { InputProps as MUIInputProps } from '@mui/material/TextField'
 import MUICard, { CardProps as MUICardProps } from '@mui/material/Card'
-import MUICardContent, { CardContentProps as MUICardContentProps } from '@mui/material/CardContent'
-import MUITable, { TableProps as MUITableProps } from '@mui/material/Table'
-import MUITableBody, { TableBodyProps as MUITableBodyProps } from '@mui/material/TableBody'
-import MUITableCell, { TableCellProps as MUITableCellProps } from '@mui/material/TableCell'
-import MUITableContainer, { TableContainerProps as MUITableContainerProps } from '@mui/material/TableContainer'
-import MUITableHead, { TableHeadProps as MUITableHeadProps } from '@mui/material/TableHead'
-import MUITableRow, { TableRowProps as MUITableRowProps } from '@mui/material/TableRow'
+import MUICardContent from '@mui/material/CardContent'
+import MUITable from '@mui/material/Table'
+import MUITableBody from '@mui/material/TableBody'
+import MUITableCell from '@mui/material/TableCell'
+import MUITableContainer from '@mui/material/TableContainer'
+import MUITableHead from '@mui/material/TableHead'
+import MUITableRow from '@mui/material/TableRow'
 import MUIPaper, { PaperProps as MUIPaperProps } from '@mui/material/Paper'
 import MUIBox, { BoxProps as MUIBoxProps } from '@mui/material/Box'
 import MUITypography, { TypographyProps as MUITypographyProps } from '@mui/material/Typography'
@@ -33,6 +32,7 @@ import MUISnackbar, { SnackbarProps as MUISnackbarProps } from '@mui/material/Sn
 import MUISwitch, { SwitchProps as MUISwitchProps } from '@mui/material/Switch'
 import MUIFormControlLabel, { FormControlLabelProps as MUIFormControlLabelProps } from '@mui/material/FormControlLabel'
 import MUIBadge, { BadgeProps as MUIBadgeProps } from '@mui/material/Badge'
+import MUITextField, { TextFieldProps as MUITextFieldProps } from '@mui/material/TextField'
 
 // Button
 export interface ButtonProps extends MUIButtonProps {
@@ -62,19 +62,19 @@ export const Button: React.FC<ButtonProps> = ({
 )
 
 // Input
-export interface InputProps extends MUIInputProps {
+export type InputProps = MUITextFieldProps & {
   label?: string
   error?: boolean
   helperText?: string
 }
 
-export const Input: React.FC<InputProps> = ({ 
-  label, 
-  error = false, 
+export const Input: React.FC<InputProps> = ({
+  label,
+  error = false,
   helperText,
-  ...props 
+  ...props
 }) => (
-  <MUIInput
+  <MUITextField
     label={label}
     error={error}
     helperText={helperText}
@@ -108,19 +108,19 @@ export const Card: React.FC<CardProps> = ({
 )
 
 // Table
-export interface TableColumn {
+export interface TableColumn<T = unknown> {
   key: string
   label: string
-  render?: (row: Record<string, unknown>) => React.ReactNode
+  render?: (row: T) => React.ReactNode
 }
 
-export interface TableProps {
-  columns: TableColumn[]
-  data: Record<string, unknown>[]
-  onRowClick?: (row: Record<string, unknown>) => void
+export interface TableProps<T = unknown> {
+  columns: TableColumn<T>[]
+  data: T[]
+  onRowClick?: (row: T) => void
 }
 
-export const Table: React.FC<TableProps> = ({ columns, data, onRowClick }) => (
+export const Table = <T = unknown,>({ columns, data, onRowClick }: TableProps<T>) => (
   <MUITableContainer component={MUIPaper}>
     <MUITable>
       <MUITableHead>
@@ -132,15 +132,15 @@ export const Table: React.FC<TableProps> = ({ columns, data, onRowClick }) => (
       </MUITableHead>
       <MUITableBody>
         {data.map((row, idx) => (
-          <MUITableRow 
-            key={idx} 
+          <MUITableRow
+            key={idx}
             hover={!!onRowClick}
             onClick={() => onRowClick?.(row)}
             sx={{ cursor: onRowClick ? 'pointer' : 'default' }}
           >
             {columns.map((col) => (
               <MUITableCell key={col.key}>
-                {col.render ? col.render(row) : String(row[col.key] || '')}
+                {col.render ? col.render(row as T) : String((row as Record<string, unknown>)[col.key] || '')}
               </MUITableCell>
             ))}
           </MUITableRow>

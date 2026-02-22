@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { Box, Typography, CircularProgress, Button } from '@mui/material'
 import { api, Position } from '../services/api'
 import { Table, StatusBadge, Paper } from '../components/ui'
+import { translations } from '../utils/translations'
 
 const Positions: React.FC = () => {
   const [loading, setLoading] = useState(true)
@@ -26,49 +27,49 @@ const Positions: React.FC = () => {
   }
 
   const handleClosePosition = async (symbol: string) => {
-    if (!confirm(`Close position for ${symbol}?`)) return
+    if (!confirm(`Закрыть позицию для ${symbol}?`)) return
 
     try {
       await api.closePosition(symbol)
       loadPositions()
     } catch (error) {
       console.error('Failed to close position:', error)
-      alert('Failed to close position')
+      alert('Не удалось закрыть позицию')
     }
   }
 
   const columns = [
-    { key: 'symbol', label: 'Symbol' },
-    { 
-      key: 'side', 
-      label: 'Side',
-      render: (row: Record<string, unknown>) => (
-        <StatusBadge status={row.side as string} />
+    { key: 'symbol', label: translations.positions.symbol },
+    {
+      key: 'side',
+      label: translations.positions.side,
+      render: (row: Position) => (
+        <StatusBadge status={row.side} />
       ),
     },
-    { 
-      key: 'quantity', 
-      label: 'Quantity',
-      render: (row: Record<string, unknown>) => Number(row.quantity).toFixed(6),
+    {
+      key: 'quantity',
+      label: translations.positions.quantity,
+      render: (row: Position) => Number(row.quantity).toFixed(6),
     },
-    { 
-      key: 'entry_price', 
-      label: 'Entry Price',
-      render: (row: Record<string, unknown>) => `$${Number(row.entry_price).toFixed(2)}`,
+    {
+      key: 'entry_price',
+      label: translations.positions.entryPrice,
+      render: (row: Position) => `$${Number(row.entry_price).toFixed(2)}`,
     },
-    { 
-      key: 'current_price', 
-      label: 'Current Price',
-      render: (row: Record<string, unknown>) => `$${Number(row.current_price).toFixed(2)}`,
+    {
+      key: 'current_price',
+      label: translations.positions.currentPrice,
+      render: (row: Position) => `$${Number(row.current_price).toFixed(2)}`,
     },
-    { 
-      key: 'pnl_percent', 
+    {
+      key: 'pnl_percent',
       label: 'P&L %',
-      render: (row: Record<string, unknown>) => {
+      render: (row: Position) => {
         const pnl = Number(row.pnl_percent)
         return (
-          <Typography 
-            component="span" 
+          <Typography
+            component="span"
             color={pnl >= 0 ? 'success.main' : 'error.main'}
             fontWeight="bold"
           >
@@ -77,14 +78,14 @@ const Positions: React.FC = () => {
         )
       },
     },
-    { 
-      key: 'unrealized_pnl', 
-      label: 'Unrealized P&L',
-      render: (row: Record<string, unknown>) => {
+    {
+      key: 'unrealized_pnl',
+      label: translations.positions.unrealizedPnL,
+      render: (row: Position) => {
         const pnl = Number(row.unrealized_pnl)
         return (
-          <Typography 
-            component="span" 
+          <Typography
+            component="span"
             color={pnl >= 0 ? 'success.main' : 'error.main'}
           >
             {pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}
@@ -94,15 +95,15 @@ const Positions: React.FC = () => {
     },
     {
       key: 'actions',
-      label: 'Actions',
-      render: (row: Record<string, unknown>) => (
+      label: 'Действия',
+      render: (row: Position) => (
         <Button
           size="small"
           color="error"
           variant="outlined"
-          onClick={() => handleClosePosition(row.symbol as string)}
+          onClick={() => handleClosePosition(row.symbol)}
         >
-          Close
+          {translations.positions.close}
         </Button>
       ),
     },
@@ -119,13 +120,13 @@ const Positions: React.FC = () => {
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Positions
+        {translations.positions.title}
       </Typography>
 
       {positions.length === 0 ? (
         <Paper sx={{ p: 4, textAlign: 'center' }}>
           <Typography color="textSecondary">
-            No open positions
+            {translations.positions.noPositions}
           </Typography>
         </Paper>
       ) : (

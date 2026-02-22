@@ -1,11 +1,12 @@
 /** Strategies Page */
 
 import React, { useEffect, useState } from 'react'
-import { Box, Typography, CircularProgress, Card, CardContent, Grid, Button, Chip, Switch, FormControlLabel } from '@mui/material'
+import { Box, Typography, CircularProgress, Card, CardContent, Grid, Chip, Switch, FormControlLabel } from '@mui/material'
 import { api, Strategy } from '../services/api'
 import PsychologyIcon from '@mui/icons-material/Psychology'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import StopCircleIcon from '@mui/icons-material/StopCircle'
+import { translations } from '../utils/translations'
 
 const Strategies: React.FC = () => {
   const [loading, setLoading] = useState(true)
@@ -37,7 +38,7 @@ const Strategies: React.FC = () => {
       loadStrategies()
     } catch (error) {
       console.error('Failed to toggle strategy:', error)
-      alert('Failed to toggle strategy')
+      alert('Не удалось переключить стратегию')
     }
   }
 
@@ -52,7 +53,7 @@ const Strategies: React.FC = () => {
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Strategies
+        {translations.strategies.title}
       </Typography>
 
       <Grid container spacing={3}>
@@ -67,8 +68,8 @@ const Strategies: React.FC = () => {
                       {strategy.name.toUpperCase()}
                     </Typography>
                   </Box>
-                  <Chip 
-                    label={strategy.active ? 'Active' : 'Inactive'} 
+                  <Chip
+                    label={strategy.active ? translations.strategies.active : translations.strategies.inactive}
                     color={strategy.active ? 'success' : 'default'}
                     size="small"
                     icon={strategy.active ? <CheckCircleIcon /> : <StopCircleIcon />}
@@ -81,7 +82,7 @@ const Strategies: React.FC = () => {
 
                 <Box mb={2}>
                   <Typography variant="body2" color="textSecondary" gutterBottom>
-                    Parameters:
+                    {translations.strategies.parameters}:
                   </Typography>
                   {Object.entries(strategy.parameters).map(([key, value]) => (
                     <Box key={key} display="flex" justifyContent="space-between" py={0.5}>
@@ -98,7 +99,7 @@ const Strategies: React.FC = () => {
                 {strategy.symbols && strategy.symbols.length > 0 && (
                   <Box mb={2}>
                     <Typography variant="body2" color="textSecondary" gutterBottom>
-                      Symbols:
+                      {translations.positions.symbol}ы:
                     </Typography>
                     <Box display="flex" flexWrap="wrap" gap={0.5}>
                       {strategy.symbols.map((symbol) => (
@@ -111,7 +112,7 @@ const Strategies: React.FC = () => {
                 {strategy.timeframe && (
                   <Box mb={2}>
                     <Typography variant="body2" color="textSecondary" gutterBottom>
-                      Timeframe:
+                      Таймфрейм:
                     </Typography>
                     <Chip label={strategy.timeframe} size="small" />
                   </Box>
@@ -127,7 +128,7 @@ const Strategies: React.FC = () => {
                       color="success"
                     />
                   }
-                  label={strategy.active ? 'Active' : 'Inactive'}
+                  label={strategy.active ? translations.strategies.active : translations.strategies.inactive}
                 />
               </CardContent>
             </Card>
@@ -139,7 +140,7 @@ const Strategies: React.FC = () => {
         <Box textAlign="center" py={8}>
           <PsychologyIcon sx={{ fontSize: 64, opacity: 0.3, mb: 2 }} />
           <Typography color="textSecondary">
-            No strategies available
+            {translations.strategies.noStrategies}
           </Typography>
         </Box>
       )}

@@ -25,15 +25,18 @@ import ReceiptIcon from '@mui/icons-material/Receipt'
 import PsychologyIcon from '@mui/icons-material/Psychology'
 import SettingsIcon from '@mui/icons-material/Settings'
 import NotificationsIcon from '@mui/icons-material/Notifications'
+import ServerIcon from '@mui/icons-material/Dns'
+import { translations } from '../../utils/translations'
 
-const drawerWidth = 240
+const drawerWidth = 260
 
 const menuItems = [
-  { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
-  { text: 'Positions', icon: <AccountBalanceWalletIcon />, path: '/positions' },
-  { text: 'Orders', icon: <ReceiptIcon />, path: '/orders' },
-  { text: 'Strategies', icon: <PsychologyIcon />, path: '/strategies' },
-  { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
+  { text: translations.nav.dashboard, icon: <DashboardIcon />, path: '/' },
+  { text: translations.nav.positions, icon: <AccountBalanceWalletIcon />, path: '/positions' },
+  { text: translations.nav.orders, icon: <ReceiptIcon />, path: '/orders' },
+  { text: translations.nav.strategies, icon: <PsychologyIcon />, path: '/strategies' },
+  { text: translations.nav.settings, icon: <SettingsIcon />, path: '/settings' },
+  { text: 'Сервер', icon: <ServerIcon />, path: '/server' },
 ]
 
 interface LayoutProps {
@@ -55,10 +58,10 @@ const Layout: React.FC<LayoutProps> = () => {
   }
 
   const drawer = (
-    <Box>
+    <Box sx={{ width: drawerWidth }}>
       <Toolbar>
-        <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 'bold' }}>
-          📱 Crypto Trader
+        <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 'bold', fontSize: '18px' }}>
+          {translations.common.cryptoTrader}
         </Typography>
       </Toolbar>
       <Divider />
@@ -96,8 +99,8 @@ const Layout: React.FC<LayoutProps> = () => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            {menuItems.find(item => item.path === location.pathname)?.text || 'Crypto Trader'}
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontSize: '16px' }}>
+            {menuItems.find(item => item.path === location.pathname)?.text || translations.common.cryptoTrader}
           </Typography>
           <IconButton color="inherit">
             <Badge badgeContent={0} color="error">
@@ -137,12 +140,13 @@ const Layout: React.FC<LayoutProps> = () => {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
+          p: 2,
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           mt: 8,
+          minHeight: '100vh',
         }}
       >
-        <Container maxWidth="xl">
+        <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
           <Outlet />
         </Container>
       </Box>
