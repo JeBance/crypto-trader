@@ -75,29 +75,68 @@ git clone https://github.com/JeBance/crypto-trader.git
 cd crypto-trader
 ```
 
-### 2. Установка (Android/Termux)
+### 2. Автоматическая установка (рекомендуется)
+
+**Одна команда установит всё:**
 
 ```bash
-# Обновление пакетов
-pkg update && pkg upgrade
-
-# Установка зависимостей
-pkg install python git curl wget nodejs
-
-# Создание виртуального окружения
-python -m venv venv
-source venv/bin/activate
-
-# Установка Python зависимостей
-pip install -r backend/requirements.txt
-
-# Установка Frontend зависимостей
-cd frontend
-npm install
-cd ..
+bash setup.sh
 ```
 
-### 3. Настройка
+**Что сделает setup.sh:**
+- ✅ Проверит Python, Git, Node.js
+- ✅ Установит отсутствующие пакеты
+- ✅ Создаст виртуальное окружение
+- ✅ Установит Python зависимости
+- ✅ Установит Frontend зависимости
+- ✅ Создаст .env и config.yaml
+
+**Опции:**
+```bash
+# Полная переустановка
+bash setup.sh --force
+
+# Без frontend
+bash setup.sh --no-frontend
+
+# Пропустить системные пакеты
+bash setup.sh --skip-packages
+```
+
+### 3. Запуск сервера
+
+```bash
+# Простой запуск (setup запустится автоматически если нужно)
+bash run.sh
+
+# Debug режим
+bash run.sh --debug
+
+# Только установка без запуска
+bash run.sh --setup
+```
+
+### 4. Ручная установка (если auto не работает)
+
+```bash
+# Termux
+pkg update && pkg upgrade
+pkg install python git curl wget nodejs
+
+# Linux
+sudo apt update
+sudo apt install python3 python3-pip python3-venv git curl nodejs
+
+# macOS
+brew install python git node
+
+# Затем
+python -m venv venv
+source venv/bin/activate
+pip install -r backend/requirements.txt
+```
+
+### 5. Настройка
 
 ```bash
 # Копирование конфигурации
@@ -114,20 +153,7 @@ nano .env
 # TELEGRAM_CHAT_ID=your_chat_id
 ```
 
-### 4. Запуск Self-Healing Server
-
-```bash
-# Обычный запуск
-bash run.sh
-
-# Debug режим (подробные логи)
-bash run.sh --debug
-
-# Без авто-обновления
-bash run.sh --no-auto-update
-```
-
-### 5. Доступ к приложению
+### 6. Доступ к приложению
 
 Откройте в браузере телефона или компьютера:
 
