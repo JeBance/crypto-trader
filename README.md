@@ -3,20 +3,49 @@
 Автоматизированная система для трейдинга криптовалютными активами, работающая на Android через Termux.
 
 [![Status](https://img.shields.io/badge/status-alpha-yellow)](https://github.com/JeBance/crypto-trader)
-[![Version](https://img.shields.io/badge/version-0.1.0-blue)](https://github.com/JeBance/crypto-trader)
+[![Version](https://img.shields.io/badge/version-0.2.0-blue)](https://github.com/JeBance/crypto-trader)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Android%20%7C%20Linux%20%7C%20macOS-orange)](https://github.com/JeBance/crypto-trader)
+
+---
+
+## 🔥 Новые возможности v0.2.0
+
+### Self-Healing Server
+- ✅ **Авто-перезапуск** при падении сервиса
+- ✅ **Авто-обновление** из Git репозитория
+- ✅ **Health Monitoring** компонентов
+- ✅ **Real-time логи** в терминале
+- ✅ **Graceful Shutdown**
+
+### Запуск в одну команду
+```bash
+bash run.sh
+```
 
 ---
 
 ## 🚀 Возможности
 
+### Trading
 - **Поддержка бирж:** Binance, Bybit (через API)
 - **Торговые стратегии:** RSI, MACD, SMA/EMA Crossover
 - **Технические индикаторы:** RSI, MACD, SMA, EMA
-- **Realtime уведомления:** Telegram, WebSocket
-- **Веб-интерфейс:** React SPA с realtime обновлениями
-- **Paper Trading:** Тестирование стратегий без риска
-- **Гибкая архитектура:** Плагины для стратегий и бирж
+- **Paper Trading:** Тестирование без риска
+
+### Notifications
+- **Telegram:** Уведомления о сделках и сигналах
+- **WebSocket:** Realtime обновления для frontend
+
+### Interface
+- **Веб-интерфейс:** React SPA с realtime данными
+- **Dashboard:** Статистика, позиции, PnL
+- **Mobile-friendly:** Адаптивный дизайн
+
+### Infrastructure
+- **Self-Healing:** Авто-восстановление при сбоях
+- **Auto-Update:** Обновление из Git
+- **Health Checks:** Мониторинг состояния
 
 ---
 
@@ -27,106 +56,87 @@
 - Установленное приложение **Termux** (рекомендуется с F-Droid)
 - Python 3.10+
 - Node.js 18+ (для frontend)
+- Git
 
 ### Для разработки:
 - Python 3.10+
 - Node.js 18+
 - Git
+- Docker (опционально)
 
 ---
 
-## ⚙️ Установка
+## ⚙️ Быстрый старт
 
-### 1. Клонирование репозитория
+### 1. Клонирование
 
 ```bash
 git clone https://github.com/JeBance/crypto-trader.git
 cd crypto-trader
 ```
 
-### 2. Установка Backend
+### 2. Установка (Android/Termux)
 
 ```bash
-# Создание виртуального окружения
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# или
-venv\Scripts\activate  # Windows
+# Обновление пакетов
+pkg update && pkg upgrade
 
 # Установка зависимостей
+pkg install python git curl wget nodejs
+
+# Создание виртуального окружения
+python -m venv venv
+source venv/bin/activate
+
+# Установка Python зависимостей
 pip install -r backend/requirements.txt
-```
 
-### 3. Установка Frontend
-
-```bash
+# Установка Frontend зависимостей
 cd frontend
 npm install
 cd ..
 ```
 
-### 4. Настройка конфигурации
+### 3. Настройка
 
 ```bash
-# Backend
+# Копирование конфигурации
 cp .env.example .env
-# Отредактируйте .env с вашими API ключами
+cp config.yaml.example config.yaml
 
-# Frontend
-cp frontend/.env.example frontend/.env
+# Редактирование .env
+nano .env
+
+# Вставьте ваши API ключи:
+# BINANCE_API_KEY=your_key_here
+# BINANCE_API_SECRET=your_secret_here
+# TELEGRAM_BOT_TOKEN=your_bot_token
+# TELEGRAM_CHAT_ID=your_chat_id
 ```
 
-### 5. Быстрая установка (Termux)
+### 4. Запуск Self-Healing Server
 
 ```bash
-bash scripts/install.sh
+# Обычный запуск
+bash run.sh
+
+# Debug режим (подробные логи)
+bash run.sh --debug
+
+# Без авто-обновления
+bash run.sh --no-auto-update
 ```
 
----
+### 5. Доступ к приложению
 
-## ▶️ Запуск
-
-### Backend
-
-```bash
-# Активировать venv
-source venv/bin/activate
-
-# Запуск сервера
-python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-
-# Или через скрипт
-bash scripts/start.sh
-```
-
-### Frontend (разработка)
-
-```bash
-cd frontend
-npm run dev
-```
-
-### Production сборка Frontend
-
-```bash
-cd frontend
-npm run build
-# Файлы будут в frontend/dist/
-```
-
----
-
-## 🌐 Доступ к приложению
-
-После запуска:
+Откройте в браузере телефона или компьютера:
 
 | Компонент | URL |
 |-----------|-----|
+| Frontend | http://localhost:3000 |
 | Backend API | http://localhost:8000 |
 | API Docs (Swagger) | http://localhost:8000/docs |
 | API Docs (ReDoc) | http://localhost:8000/redoc |
-| Frontend (dev) | http://localhost:3000 |
-| Frontend (prod) | https://jebance.github.io/crypto-trader/ |
 
 ---
 
@@ -136,145 +146,248 @@ npm run build
 crypto-trader/
 ├── backend/
 │   ├── app/
-│   │   ├── api/           # REST API endpoints
-│   │   ├── core/          # Core модуль (events, exceptions, types)
-│   │   ├── exchanges/     # Exchange плагины (Binance, Bybit)
-│   │   ├── indicators/    # Технические индикаторы
-│   │   ├── models/        # SQLAlchemy модели
-│   │   ├── notifications/ # Notification плагины (Telegram)
-│   │   ├── plugins/       # Система плагинов
-│   │   ├── services/      # Бизнес-логика (OrderManager, PositionManager)
-│   │   ├── strategies/    # Trading стратегии (RSI, MACD)
-│   │   ├── websocket/     # WebSocket handlers
-│   │   ├── main.py        # Точка входа FastAPI
-│   │   ├── config.py      # Конфигурация
-│   │   ├── database.py    # База данных
-│   │   └── logger.py      # Логирование
-│   ├── tests/             # Тесты
-│   └── requirements.txt   # Зависимости Python
+│   │   ├── api/               # REST API endpoints
+│   │   │   ├── health.py      # Health check endpoints
+│   │   │   ├── config.py      # Configuration API
+│   │   │   ├── orders.py      # Orders API
+│   │   │   ├── positions.py   # Positions API
+│   │   │   └── strategies.py  # Strategies API
+│   │   │
+│   │   ├── core/              # Core module
+│   │   │   ├── events.py      # Event Bus (pub/sub)
+│   │   │   ├── exceptions.py  # Custom exceptions
+│   │   │   └── types.py       # Data types
+│   │   │
+│   │   ├── exchanges/         # Exchange plugins
+│   │   │   ├── binance.py     # Binance exchange
+│   │   │   └── bybit.py       # Bybit exchange
+│   │   │
+│   │   ├── indicators/        # Technical indicators
+│   │   │   ├── sma.py         # Simple Moving Average
+│   │   │   ├── ema.py         # Exponential Moving Average
+│   │   │   ├── rsi.py         # Relative Strength Index
+│   │   │   └── macd.py        # MACD indicator
+│   │   │
+│   │   ├── models/            # Database models
+│   │   │   ├── candle.py      # Candlestick data
+│   │   │   ├── order.py       # Order data
+│   │   │   ├── position.py    # Position data
+│   │   │   └── trade.py       # Trade data
+│   │   │
+│   │   ├── notifications/     # Notification plugins
+│   │   │   └── telegram.py    # Telegram bot
+│   │   │
+│   │   ├── plugins/           # Plugin system
+│   │   │   ├── base.py        # Base plugin classes
+│   │   │   └── manager.py     # Plugin manager
+│   │   │
+│   │   ├── services/          # Business logic
+│   │   │   ├── order_manager.py
+│   │   │   ├── position_manager.py
+│   │   │   ├── data_service.py
+│   │   │   └── strategy_executor.py
+│   │   │
+│   │   ├── strategies/        # Trading strategies
+│   │   │   └── rsi.py         # RSI strategy
+│   │   │
+│   │   ├── websocket/         # WebSocket handlers
+│   │   │   ├── manager.py     # Connection manager
+│   │   │   └── routes.py      # WebSocket routes
+│   │   │
+│   │   ├── self_healing/      # Self-healing components
+│   │   │   ├── supervisor.py        # Service supervisor
+│   │   │   ├── updater.py           # Auto-updater
+│   │   │   └── health_monitor.py    # Health checks
+│   │   │
+│   │   ├── main.py            # FastAPI application
+│   │   ├── config.py          # Configuration
+│   │   ├── database.py        # Database setup
+│   │   └── logger.py          # Logging setup
+│   │
+│   ├── tests/                 # Unit tests
+│   │   ├── test_indicators.py
+│   │   ├── test_events.py
+│   │   ├── test_websocket.py
+│   │   ├── test_data_service.py
+│   │   └── test_rsi_strategy.py
+│   │
+│   └── requirements.txt       # Python dependencies
 │
 ├── frontend/
 │   ├── src/
-│   │   ├── components/    # React компоненты
-│   │   ├── pages/         # Страницы приложения
-│   │   ├── services/      # API и WebSocket клиенты
-│   │   ├── store/         # Redux store
-│   │   ├── App.tsx        # Корневой компонент
-│   │   └── main.tsx       # Точка входа
-│   ├── public/            # Статические файлы
-│   └── package.json       # Зависимости Node.js
+│   │   ├── components/        # React components
+│   │   │   ├── ui/            # Base UI components
+│   │   │   └── layout/        # Layout components
+│   │   │
+│   │   ├── pages/             # Application pages
+│   │   │   ├── Dashboard.tsx
+│   │   │   ├── Positions.tsx
+│   │   │   ├── Orders.tsx
+│   │   │   ├── Strategies.tsx
+│   │   │   └── Settings.tsx
+│   │   │
+│   │   ├── services/          # API clients
+│   │   │   ├── api.ts         # REST API client
+│   │   │   └── websocket.ts   # WebSocket client
+│   │   │
+│   │   ├── store/             # Redux store
+│   │   │   └── index.ts
+│   │   │
+│   │   ├── App.tsx            # Root component
+│   │   └── main.tsx           # Entry point
+│   │
+│   ├── public/                # Static files
+│   ├── package.json           # Node dependencies
+│   └── vite.config.ts         # Vite configuration
 │
 ├── scripts/
-│   ├── install.sh         # Скрипт установки
-│   └── start.sh           # Скрипт запуска
+│   ├── install.sh             # Installation script
+│   ├── start.sh               # Start script
+│   ├── hook_prerestart.sh     # Pre-restart hook
+│   └── hook_postrestart.sh    # Post-restart hook
 │
 ├── docs/
-│   └── API.md             # Документация API
+│   ├── API.md                 # API documentation
+│   ├── SELF_HEALING_SERVER.md # Self-healing guide
+│   ├── ARCHITECTURE.md        # Architecture guide
+│   └── CONTRIBUTING.md        # Contributing guide
 │
-├── .env.example           # Шаблон переменных окружения
-├── config.yaml.example    # Шаблон конфигурации стратегий
-├── ROADMAP.md             # План разработки
-├── AGENT.md               # Руководство для ИИ-агента
-├── ARCHITECTURE.md        # Описание архитектуры
-├── CONTRIBUTING.md        # Гайд по внесению изменений
-└── DECISIONS.md           # Архитектурные решения (ADR)
+├── run_server.py              # Self-healing server
+├── run.sh                     # Bash wrapper
+├── .env.example               # Environment template
+├── config.yaml.example        # Config template
+├── README.md                  # This file
+├── ROADMAP.md                 # Development roadmap
+└── AGENT.md                   # AI agent guide
 ```
+
+---
+
+## 📖 Документация
+
+### Основное
+- 📘 [API Documentation](docs/API.md) — REST API и WebSocket endpoints
+- 🔄 [Self-Healing Server](docs/SELF_HEALING_SERVER.md) — Руководство по авто-восстановлению
+- 🏗️ [Architecture](docs/ARCHITECTURE.md) — Архитектура системы
+- 🤝 [Contributing](docs/CONTRIBUTING.md) — Как внести вклад
+
+### Для разработчиков
+- 🤖 [AI Agent Guide](AGENT.md) — Руководство для ИИ-агента
+- 📋 [Decisions](docs/DECISIONS.md) — Архитектурные решения (ADR)
+- 🗺️ [ROADMAP](ROADMAP.md) — План разработки
 
 ---
 
 ## 🔌 API Endpoints
 
-### Health
-- `GET /api/health` — Health check
-- `GET /api/health/status` — System status
+### Health & Status
+```bash
+GET /api/health              # Health check
+GET /api/health/ready        # Readiness check
+GET /api/health/status       # System status
+```
 
 ### Configuration
-- `GET /api/config` — Get configuration
-- `GET /api/config/exchanges` — Exchange configs
+```bash
+GET /api/config              # Get configuration
+GET /api/config/exchanges    # Exchange configs
+GET /api/config/env          # Environment variables
+```
 
 ### Orders
-- `GET /api/orders` — Get orders
-- `POST /api/orders` — Create order
-- `DELETE /api/orders/{id}` — Cancel order
+```bash
+GET  /api/orders             # Get orders
+GET  /api/orders/{id}        # Get order by ID
+POST /api/orders             # Create order
+DELETE /api/orders/{id}      # Cancel order
+```
 
 ### Positions
-- `GET /api/positions` — Get positions
-- `POST /api/positions/{symbol}/close` — Close position
+```bash
+GET  /api/positions          # Get positions
+GET  /api/positions/{symbol} # Get position by symbol
+POST /api/positions/{symbol}/close  # Close position
+```
 
 ### Strategies
-- `GET /api/strategies` — Get strategies
-- `POST /api/strategies/{name}/activate` — Activate strategy
-- `POST /api/strategies/{name}/deactivate` — Deactivate strategy
+```bash
+GET  /api/strategies         # Get strategies
+GET  /api/strategies/{name}  # Get strategy by name
+POST /api/strategies/{name}/activate    # Activate strategy
+POST /api/strategies/{name}/deactivate  # Deactivate strategy
+PUT  /api/strategies/{name}/parameters  # Update parameters
+```
 
 ### WebSocket
-- `WS /ws/stream` — Realtime updates
+```bash
+WS /ws/stream                # Realtime updates
+```
 
-Полная документация: [/docs/API.md](docs/API.md) или http://localhost:8000/docs
+---
+
+## 🧪 Тестирование
+
+### Backend тесты
+
+```bash
+# Активировать venv
+source venv/bin/activate
+
+# Запустить тесты
+pytest backend/tests/ -v
+
+# С покрытием
+pytest backend/tests/ -v --cov=app --cov-report=html
+```
+
+### Frontend тесты
+
+```bash
+cd frontend
+
+# Запустить тесты
+npm test
+
+# С покрытием
+npm test -- --coverage
+```
 
 ---
 
 ## 📊 Архитектура
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                  Frontend (React SPA)                   │
-│  Dashboard │ Positions │ Orders │ Strategies │ Settings │
-└─────────────────────────────────────────────────────────┘
-              ↕ REST API / WebSocket ↕
-┌─────────────────────────────────────────────────────────┐
-│                  Backend (FastAPI)                      │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐  │
-│  │   Plugins   │  │    Core     │  │    Services     │  │
-│  │  Exchange   │  │   Config    │  │  Order Manager  │  │
-│  │  Strategy   │  │   Events    │  │  Position Mgr   │  │
-│  │  Notifier   │  │   Logger    │  │  Data Service   │  │
-│  └─────────────┘  └─────────────┘  └─────────────────┘  │
-└─────────────────────────────────────────────────────────┘
-              ↕ External APIs ↕
-┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐
-│   Binance   │  │    Bybit    │  │   Telegram Bot API  │
-└─────────────┘  └─────────────┘  └─────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                      FRONTEND (React SPA)                   │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  Dashboard │ Positions │ Orders │ Strategies │ Settings │  │
+│  └──────────────────────────────────────────────────────┘   │
+│         ↕ REST API / WebSocket ↕                            │
+└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                      BACKEND (FastAPI)                      │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │              SELF-HEALING LAYER                      │   │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌────────────┐ │   │
+│  │  │  Supervisor  │  │  AutoUpdater │  │   Health   │ │   │
+│  │  │  (restart)   │  │  (git pull)  │  │  Monitor   │ │   │
+│  │  └──────────────┘  └──────────────┘  └────────────┘ │   │
+│  └──────────────────────────────────────────────────────┘   │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │                  APPLICATION LAYER                   │   │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌──────────────┐ │   │
+│  │  │   Plugins   │  │   Core      │  │   Services   │ │   │
+│  │  │  Exchange   │  │   Config    │  │   Order Mgr  │ │   │
+│  │  │  Strategy   │  │   Events    │  │  Position Mgr│ │   │
+│  │  │  Notifier   │  │   Logger    │  │  Data Service│ │   │
+│  │  └─────────────┘  └─────────────┘  └──────────────┘ │   │
+│  └──────────────────────────────────────────────────────┘   │
+│         ↕ External APIs ↕                                   │
+└─────────────────────────────────────────────────────────────┘
+┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐
+│   Binance    │  │    Bybit     │  │   Telegram Bot API   │
+└──────────────┘  └──────────────┘  └──────────────────────┘
 ```
-
-Подробная архитектура: [ARCHITECTURE.md](ARCHITECTURE.md)
-
----
-
-## 🧪 Тестирование
-
-### Backend
-
-```bash
-pytest backend/tests/ -v --cov=app
-```
-
-### Frontend
-
-```bash
-cd frontend
-npm test
-```
-
----
-
-## 📈 ROADMAP
-
-Текущий статус: **Этап 6 завершен** (Frontend UI)
-
-| Этап | Статус | Описание |
-|------|--------|----------|
-| 1. Foundation | ✅ | Базовая архитектура, плагины, Event Bus |
-| 2. Core Backend | ✅ | FastAPI, WebSocket, сервисы |
-| 3. Exchange Integration | ✅ | Binance, Bybit плагины |
-| 4. Strategies & Indicators | ✅ | RSI, MACD, SMA, EMA |
-| 5. Risk Management | ⏳ | Управление рисками |
-| 6. Frontend UI | ✅ | React приложение |
-| 7. Notifications | ✅ | Telegram notifier |
-| 8. Installation | ✅ | Скрипты установки |
-| 9. Testing | 🔄 | Тесты (частично) |
-| 10. Release v1.0 | ⏳ | Финальный релиз |
-
-Полный план: [ROADMAP.md](ROADMAP.md)
 
 ---
 
@@ -286,6 +399,7 @@ npm test
 - Не является финансовой рекомендацией
 - Тестируйте стратегию на демо-счете перед использованием реальных средств
 - Никогда не передавайте свои API-ключи третьим лицам
+- Используйте testnet режим для тестирования
 
 ---
 
@@ -299,15 +413,34 @@ MIT License — см. [LICENSE](LICENSE) файл
 
 - [GitHub Repository](https://github.com/JeBance/crypto-trader)
 - [API Documentation](docs/API.md)
-- [Architecture](ARCHITECTURE.md)
-- [Contributing Guide](CONTRIBUTING.md)
+- [Self-Healing Guide](docs/SELF_HEALING_SERVER.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Contributing Guide](docs/CONTRIBUTING.md)
 - [AI Agent Guide](AGENT.md)
 
 ---
 
 ## 🤝 Вклад в проект
 
-См. [CONTRIBUTING.md](CONTRIBUTING.md) для информации о том, как внести свой вклад.
+См. [CONTRIBUTING.md](docs/CONTRIBUTING.md) для информации о том, как внести свой вклад.
+
+---
+
+## 📈 Статус проекта
+
+| Этап | Статус | Описание |
+|------|--------|----------|
+| 1. Foundation | ✅ | Базовая архитектура, плагины, Event Bus |
+| 2. Core Backend | ✅ | FastAPI, WebSocket, сервисы |
+| 3. Exchange Integration | ✅ | Binance, Bybit плагины |
+| 4. Strategies & Indicators | ✅ | RSI, MACD, SMA, EMA |
+| 5. Risk Management | ⏳ | Управление рисками |
+| 6. Frontend UI | ✅ | React приложение |
+| 7. Notifications | ✅ | Telegram notifier |
+| 8. Installation | ✅ | Скрипты установки |
+| **9. Self-Healing Server** | ✅ | **Авто-восстановление и обновление** |
+| 10. Testing | 🔄 | Тесты (частично) |
+| 11. Release v1.0 | ⏳ | Финальный релиз |
 
 ---
 
