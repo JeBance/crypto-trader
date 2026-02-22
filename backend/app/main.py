@@ -419,13 +419,14 @@ app = create_app()
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     logger.info(f"Starting server on {settings.HOST}:{settings.PORT}")
-    
+
     uvicorn.run(
         "app.main:app",
         host=settings.HOST,
         port=settings.PORT,
-        reload=settings.APP_DEBUG,
+        reload=False,  # Отключаем reload для корректного перезапуска
+        workers=1,     # Один worker для корректного выхода
         log_level=settings.APP_LOG_LEVEL.lower(),
     )

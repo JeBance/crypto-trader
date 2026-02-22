@@ -3,11 +3,12 @@
 import asyncio
 import logging
 import os
+import signal
 import sys
 from datetime import datetime
 from pathlib import Path
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
@@ -84,11 +85,12 @@ async def restart_server():
         from app.main import request_restart
         request_restart()
         
-        # Schedule restart using signal
+        # Schedule restart using sys.exit
         async def delayed_restart():
             await asyncio.sleep(1)  # Wait for response to be sent
-            logger.info("Initiating server restart via signal...")
-            os.kill(os.getpid(), signal.SIGTERM)
+            logger.info("Initiating server restart via sys.exit(3)...")
+            import sys
+            sys.exit(3)  # Exit code 3 = restart requested
         
         asyncio.create_task(delayed_restart())
         
