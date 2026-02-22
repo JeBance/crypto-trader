@@ -20,7 +20,7 @@ class Timeframe(str, Enum):
     H12 = "12h"
     D1 = "1d"
     W1 = "1w"
-    M1 = "1M"
+    MON1 = "1M"  # Monthly (renamed to avoid conflict with M1)
 
 
 class OrderSide(str, Enum):

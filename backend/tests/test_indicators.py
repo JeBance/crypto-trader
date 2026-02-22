@@ -101,7 +101,7 @@ class TestRSI:
     
     def test_rsi_oversold(self):
         """Test RSI oversold detection."""
-        rsi = RSI(period=14, oversold=30, overbought=70)
+        rsi = RSI(period=14)
         
         # Falling prices should lead to oversold
         prices = [100 - i for i in range(30)]
@@ -109,6 +109,7 @@ class TestRSI:
         # RSI should eventually become oversold
         result = rsi.calculate(prices)
         assert result is not None
+        assert result < 50  # Should be low for falling prices
     
     def test_rsi_is_overbought(self):
         """Test RSI overbought helper method."""
