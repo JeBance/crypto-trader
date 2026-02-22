@@ -168,6 +168,32 @@ async def initialize_plugins() -> None:
     except Exception as e:
         logger.error(f"Failed to initialize RSI strategy: {e}")
     
+    try:
+        from app.strategies.crossover import CrossoverStrategy
+        crossover_strategy = CrossoverStrategy(
+            fast_period=9,
+            slow_period=21,
+            ma_type="ema",
+        )
+        await crossover_strategy.initialize()
+        plugin_manager.register(crossover_strategy)
+        logger.info("✅ Crossover strategy initialized")
+    except Exception as e:
+        logger.error(f"Failed to initialize Crossover strategy: {e}")
+    
+    try:
+        from app.strategies.macd import MACDStrategy
+        macd_strategy = MACDStrategy(
+            fast_period=12,
+            slow_period=26,
+            signal_period=9,
+        )
+        await macd_strategy.initialize()
+        plugin_manager.register(macd_strategy)
+        logger.info("✅ MACD strategy initialized")
+    except Exception as e:
+        logger.error(f"Failed to initialize MACD strategy: {e}")
+    
     # Load notifier plugins
     if settings.TELEGRAM_BOT_TOKEN and settings.TELEGRAM_CHAT_ID:
         try:
