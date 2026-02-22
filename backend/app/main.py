@@ -15,6 +15,8 @@ Note: Application works without .env file using default values.
 """
 
 import logging
+import os
+import signal
 from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
@@ -34,6 +36,22 @@ from app.websocket.manager import ws_manager
 # Setup logging
 setup_logger()
 logger = logging.getLogger(__name__)
+
+# Global flag for restart
+_restart_requested = False
+
+
+def handle_sigterm(signum, frame):
+    """Handle SIGTERM signal for restart."""
+    global _restart_requested
+    logger.info("SIGTERM received")
+    _restart_requested = True
+    # Exit with code 3 for restart
+    os._exit(3)
+
+
+# Register signal handler
+signal.signal(signal.SIGTERM, handle_sigterm)
 
 
 # Global application state

@@ -84,11 +84,11 @@ async def restart_server():
         from app.main import request_restart
         request_restart()
         
-        # Schedule restart - exit after response
+        # Schedule restart using signal
         async def delayed_restart():
-            await asyncio.sleep(2)  # Wait for response to be sent
-            logger.info("Initiating server restart...")
-            os._exit(3)  # Exit code 3 = restart requested
+            await asyncio.sleep(1)  # Wait for response to be sent
+            logger.info("Initiating server restart via signal...")
+            os.kill(os.getpid(), signal.SIGTERM)
         
         asyncio.create_task(delayed_restart())
         
