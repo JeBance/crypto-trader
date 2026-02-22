@@ -2,26 +2,28 @@
 
 Автоматизированная система для трейдинга криптовалютными активами, работающая на Android через Termux.
 
-[![Status](https://img.shields.io/badge/status-alpha-yellow)](https://github.com/JeBance/crypto-trader)
-[![Version](https://img.shields.io/badge/version-0.2.0-blue)](https://github.com/JeBance/crypto-trader)
+[![Status](https://img.shields.io/badge/status-release-green)](https://github.com/JeBance/crypto-trader)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue)](https://github.com/JeBance/crypto-trader)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Android%20%7C%20Linux%20%7C%20macOS-orange)](https://github.com/JeBance/crypto-trader)
+[![CI/CD](https://github.com/JeBance/crypto-trader/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/JeBance/crypto-trader/actions)
 
 ---
 
-## 🔥 Новые возможности v0.2.0
+## 🎉 Release v1.0.0
 
-### Self-Healing Server
-- ✅ **Авто-перезапуск** при падении сервиса
-- ✅ **Авто-обновление** из Git репозитория
-- ✅ **Health Monitoring** компонентов
-- ✅ **Real-time логи** в терминале
-- ✅ **Graceful Shutdown**
+**Первый стабильный релиз Crypto Trader!**
 
-### Запуск в одну команду
-```bash
-bash run.sh
-```
+### Ключевые возможности
+- ✅ **Self-Healing Server** — авто-перезапуск и авто-обновление
+- ✅ **Web UI** — React приложение с realtime данными
+- ✅ **3 Стратегии** — RSI, Crossover (SMA/EMA), MACD
+- ✅ **2 Биржи** — Binance, Bybit
+- ✅ **4 Индикатора** — SMA, EMA, RSI, MACD
+- ✅ **Risk Management** — позиционирование, SL/TP, лимиты
+- ✅ **Backtesting** — тестирование на исторических данных
+- ✅ **Telegram** — уведомления о сделках
+- ✅ **Auto-Install** — установка одной командой
 
 ---
 
