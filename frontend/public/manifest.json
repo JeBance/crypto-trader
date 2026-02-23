@@ -1,0 +1,26 @@
+{
+  "name": "Crypto Trader",
+  "short_name": "CryptoTrader",
+  "description": "Automated cryptocurrency trading system",
+  "start_url": "/crypto-trader/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1976d2",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/crypto-trader/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/crypto-trader/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "utilities"],
+  "lang": "en-US"
+}
