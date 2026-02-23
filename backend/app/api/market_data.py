@@ -473,3 +473,84 @@ async def backfill_data(
         "days": request.days_to_backfill,
         "status": "pending",
     }
+
+
+# === Database Optimization ===
+
+@router.post("/optimize")
+async def optimize_database(
+    run_vacuum: bool = Query(True, description="Run VACUUM"),
+    run_analyze: bool = Query(True, description="Run ANALYZE"),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Optimize database performance.
+    
+    Operations:
+    - VACUUM: Reclaim disk space
+    - ANALYZE: Update query statistics
+    - Integrity check
+    """
+    from app.services.database_optimizer import DatabaseOptimizer
+    
+    optimizer = DatabaseOptimizer(db)
+    
+    results = {
+        "vacuum": False,
+        "analyze": False,
+        "integrity_check": False,
+    }
+    
+    # Integrity check
+    results["integrity_check"] = await optimizer.check_integrity()
+    
+    # VACUUM
+    if run_vacuum:
+        results["vacuum"] = await optimizer.vacuum()
+    
+    # ANALYZE
+    if run_analyze:
+        results["analyze"] = await optimizer.analyze()
+    
+    return {
+        "message": "Database optimization completed",
+        "results": results,
+    }
+
+
+@router.get("/optimization/stats")
+async def get_optimization_stats(
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get database optimization statistics.
+    """
+    from app.services.database_optimizer import DatabaseOptimizer
+    
+    optimizer = DatabaseOptimizer(db)
+    stats = await optimizer.get_optimization_stats()
+    
+    return stats
+
+
+@router.post("/optimization/cleanup-logs")
+async def cleanup_old_logs(
+    days_to_keep: int = Query(30, ge=1, le=365),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Clean up old collection logs.
+    
+    Args:
+        days_to_keep: Number of days to keep
+    """
+    from app.services.database_optimizer import DatabaseOptimizer
+    
+    optimizer = DatabaseOptimizer(db)
+    deleted_count = await optimizer.cleanup_old_logs(days_to_keep)
+    
+    return {
+        "message": f"Deleted {deleted_count} old collection logs",
+        "deleted_count": deleted_count,
+        "days_to_keep": days_to_keep,
+    }
