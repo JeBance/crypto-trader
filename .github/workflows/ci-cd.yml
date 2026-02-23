@@ -30,15 +30,9 @@ jobs:
     
     - name: Install dependencies
       run: |
-        # Install TA-Lib C library first
-        wget https://github.com/TA-Lib/ta-lib/releases/download/v0.6.0/ta-lib-0.6.0-src.tar.gz
-        tar -xzf ta-lib-0.6.0-src.tar.gz
-        cd ta-lib/
-        ./configure --prefix=/usr
-        make
-        sudo make install
-        cd ..
-        rm -rf ta-lib ta-lib-0.6.0-src.tar.gz
+        # Install TA-Lib C library from Ubuntu repo
+        sudo apt-get update
+        sudo apt-get install -y libta-lib-dev
         
         # Install Python dependencies
         python -m pip install --upgrade pip
