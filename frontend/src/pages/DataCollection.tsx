@@ -246,9 +246,9 @@ const DataCollectionPage: React.FC = () => {
   };
 
   // Resume monitoring
-  const handleResumePair = async (symbol: string) => {
+  const handleResumePair = async (symbol: string, exchange: string) => {
     try {
-      const response = await fetch(`/api/market-data/monitored-pairs/${symbol}/resume`, {
+      const response = await fetch(`/api/market-data/monitored-pairs/${exchange}/${symbol}/resume`, {
         method: 'POST',
       });
 
@@ -261,15 +261,6 @@ const DataCollectionPage: React.FC = () => {
       setError('Failed to resume monitoring');
       console.error(err);
     }
-  };
-
-  // Toggle timeframe selection
-  const toggleTimeframe = (tf: string) => {
-    setNewTimeframes(prev =>
-      prev.includes(tf)
-        ? prev.filter(t => t !== tf)
-        : [...prev, tf]
-    );
   };
 
   // Format date
@@ -324,7 +315,7 @@ const DataCollectionPage: React.FC = () => {
       {/* Statistics Cards */}
       {stats && (
         <Grid container spacing={3} mb={4}>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Grid xs={12} sm={6} md={3}>
             <Card>
               <CardContent>
                 <Typography color="text.secondary" gutterBottom>
@@ -340,7 +331,7 @@ const DataCollectionPage: React.FC = () => {
             </Card>
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Grid xs={12} sm={6} md={3}>
             <Card>
               <CardContent>
                 <Typography color="text.secondary" gutterBottom>
@@ -356,7 +347,7 @@ const DataCollectionPage: React.FC = () => {
             </Card>
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Grid xs={12} sm={6} md={3}>
             <Card>
               <CardContent>
                 <Typography color="text.secondary" gutterBottom>
@@ -372,7 +363,7 @@ const DataCollectionPage: React.FC = () => {
             </Card>
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Grid xs={12} sm={6} md={3}>
             <Card>
               <CardContent>
                 <Typography color="text.secondary" gutterBottom>

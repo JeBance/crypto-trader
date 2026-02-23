@@ -37,5 +37,5 @@ export default defineConfig({
       },
     },
   },
-  base: '/',  // Changed from '/crypto-trader/' for local dev
+  base: '/crypto-trader/',  // GitHub Pages base path
 })
