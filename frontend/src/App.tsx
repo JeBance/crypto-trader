@@ -36,7 +36,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <BrowserRouter basename="/crypto-trader">
+      <BrowserRouter basename="/">
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Dashboard />} />
