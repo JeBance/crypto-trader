@@ -7,6 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.plugins.base import ExchangePlugin
 from app.services.candle_collector import CandleCollector
+from app.services.ticker_collector import TickerCollector
+from app.services.trade_collector import TradeCollector
 from app.services.market_data_service import MarketDataService
 
 logger = logging.getLogger(__name__)
@@ -51,6 +53,20 @@ class DataCollectionManager:
             collection_interval=candle_collection_interval,
         )
         
+        self.ticker_collector = TickerCollector(
+            exchange=exchange,
+            db_session=db_session,
+            exchange_name=exchange_name,
+            collection_interval=ticker_collection_interval,
+        )
+        
+        self.trade_collector = TradeCollector(
+            exchange=exchange,
+            db_session=db_session,
+            exchange_name=exchange_name,
+            collection_interval=trade_collection_interval,
+        )
+        
         # Market data service (shared)
         self.market_data_service = MarketDataService(
             exchange=exchange,
@@ -73,10 +89,12 @@ class DataCollectionManager:
         logger.info("Starting DataCollectionManager...")
         self._running = True
         
-        # Start candle collector
+        # Start all collectors
         await self.candle_collector.start()
+        await self.ticker_collector.start()
+        await self.trade_collector.start()
         
-        logger.info("DataCollectionManager started")
+        logger.info("DataCollectionManager started (candles, tickers, trades)")
     
     async def stop(self) -> None:
         """Stop all collectors."""
@@ -86,8 +104,10 @@ class DataCollectionManager:
         logger.info("Stopping DataCollectionManager...")
         self._running = False
         
-        # Stop candle collector
+        # Stop all collectors
         await self.candle_collector.stop()
+        await self.ticker_collector.stop()
+        await self.trade_collector.stop()
         
         logger.info("DataCollectionManager stopped")
     
@@ -106,6 +126,8 @@ class DataCollectionManager:
             is_active: Whether to actively collect data
         """
         await self.candle_collector.add_monitored_pair(symbol, timeframes, is_active)
+        await self.ticker_collector.add_symbol(symbol)
+        await self.trade_collector.add_symbol(symbol)
         
         self._monitored_pairs[symbol] = {
             "timeframes": timeframes,
@@ -121,6 +143,8 @@ class DataCollectionManager:
         NOTE: Historical data is preserved!
         """
         await self.candle_collector.remove_monitored_pair(symbol)
+        await self.ticker_collector.remove_symbol(symbol)
+        await self.trade_collector.remove_symbol(symbol)
         
         self._monitored_pairs.pop(symbol, None)
         
@@ -133,6 +157,8 @@ class DataCollectionManager:
         Will automatically backfill missing data.
         """
         await self.candle_collector.resume_monitored_pair(symbol)
+        await self.ticker_collector.add_symbol(symbol)
+        await self.trade_collector.add_symbol(symbol)
         
         logger.info(f"Resumed monitoring for: {self.exchange_name}:{symbol}")
     
@@ -183,12 +209,16 @@ class DataCollectionManager:
     def get_stats(self) -> dict:
         """Get collection statistics."""
         candle_stats = self.candle_collector.get_stats()
+        ticker_stats = self.ticker_collector.get_stats()
+        trade_stats = self.trade_collector.get_stats()
         
         return {
             "exchange": self.exchange_name,
             "running": self._running,
             "monitored_pairs": len(self._monitored_pairs),
             "candle_collector": candle_stats,
+            "ticker_collector": ticker_stats,
+            "trade_collector": trade_stats,
         }
     
     def get_monitored_pairs(self) -> Dict[str, dict]:

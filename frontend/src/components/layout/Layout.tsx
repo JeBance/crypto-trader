@@ -23,6 +23,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard'
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
 import ReceiptIcon from '@mui/icons-material/Receipt'
 import PsychologyIcon from '@mui/icons-material/Psychology'
+import StorageIcon from '@mui/icons-material/Storage'
 import SettingsIcon from '@mui/icons-material/Settings'
 import NotificationsIcon from '@mui/icons-material/Notifications'
 import ServerIcon from '@mui/icons-material/Dns'
@@ -35,6 +36,7 @@ const menuItems = [
   { text: translations.nav.positions, icon: <AccountBalanceWalletIcon />, path: '/positions' },
   { text: translations.nav.orders, icon: <ReceiptIcon />, path: '/orders' },
   { text: translations.nav.strategies, icon: <PsychologyIcon />, path: '/strategies' },
+  { text: 'Data Collection', icon: <StorageIcon />, path: '/data-collection' },
   { text: translations.nav.settings, icon: <SettingsIcon />, path: '/settings' },
   { text: 'Сервер', icon: <ServerIcon />, path: '/server' },
 ]
