@@ -1,4 +1,4 @@
-/** Русские переводы для UI */
+/** Translations for UI */ 
 
 export const translations = {
   // Навигация

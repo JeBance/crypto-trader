@@ -31,8 +31,8 @@ import SettingsIcon from '@mui/icons-material/Settings'
 import ServerIcon from '@mui/icons-material/Dns'
 import Brightness4Icon from '@mui/icons-material/Brightness4'
 import Brightness7Icon from '@mui/icons-material/Brightness7'
-import { translations } from '../utils/translations'
-import { useThemeStore } from '../store/themeStore'
+import { translations } from '../../utils/translations'
+import { useThemeStore } from '../../store/themeStore'
 
 const drawerWidth = 280
 const collapsedDrawerWidth = 70
