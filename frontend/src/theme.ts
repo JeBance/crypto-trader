@@ -83,44 +83,44 @@ export const lightThemeOptions: ThemeOptions = {
   palette: {
     mode: 'light',
     primary: {
-      main: '#2563eb',
-      light: '#60a5fa',
-      dark: '#1d4ed8',
+      main: '#1e40af',
+      light: '#3b82f6',
+      dark: '#1e3a8a',
       contrastText: '#ffffff',
     },
     secondary: {
-      main: '#7c3aed',
-      light: '#a78bfa',
-      dark: '#6d28d9',
+      main: '#6b21a8',
+      light: '#9333ea',
+      dark: '#581c87',
       contrastText: '#ffffff',
     },
     success: {
-      main: '#10b981',
-      light: '#34d399',
-      dark: '#059669',
+      main: '#059669',
+      light: '#10b981',
+      dark: '#047857',
     },
     error: {
-      main: '#ef4444',
-      light: '#f87171',
-      dark: '#dc2626',
+      main: '#dc2626',
+      light: '#ef4444',
+      dark: '#b91c1c',
     },
     warning: {
-      main: '#f59e0b',
-      light: '#fbbf24',
-      dark: '#d97706',
+      main: '#d97706',
+      light: '#f59e0b',
+      dark: '#b45309',
     },
     info: {
-      main: '#06b6d4',
-      light: '#22d3ee',
-      dark: '#0891b2',
+      main: '#0891b2',
+      light: '#06b6d4',
+      dark: '#0e7490',
     },
     background: {
-      default: '#f1f5f9',
+      default: '#e2e8f0',
       paper: '#ffffff',
     },
     text: {
-      primary: '#1e293b',
-      secondary: '#475569',
+      primary: '#0f172a',
+      secondary: '#334155',
     },
   },
   shape: {
@@ -145,7 +145,7 @@ export const lightThemeOptions: ThemeOptions = {
         root: {
           borderRadius: 16,
           overflow: 'hidden',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
           backgroundColor: '#ffffff',
         },
       },
@@ -154,7 +154,7 @@ export const lightThemeOptions: ThemeOptions = {
       styleOverrides: {
         paper: {
           backgroundColor: '#ffffff',
-          color: '#1e293b',
+          color: '#0f172a',
         },
       },
     },
@@ -168,17 +168,55 @@ export const lightThemeOptions: ThemeOptions = {
     MuiTypography: {
       styleOverrides: {
         root: {
-          color: '#1e293b',
+          color: '#0f172a',
         },
       },
     },
     MuiListItemText: {
       styleOverrides: {
         primary: {
-          color: '#1e293b',
+          color: '#0f172a',
         },
         secondary: {
-          color: '#475569',
+          color: '#334155',
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          color: '#0f172a',
+        },
+      },
+    },
+    MuiToolbar: {
+      styleOverrides: {
+        root: {
+          color: '#0f172a',
+        },
+      },
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          color: '#0f172a',
+        },
+      },
+    },
+    MuiListItemButton: {
+      styleOverrides: {
+        root: {
+          color: '#0f172a',
+          '&.Mui-selected': {
+            color: '#ffffff',
+          },
+        },
+      },
+    },
+    MuiListItemIcon: {
+      styleOverrides: {
+        root: {
+          color: '#0f172a',
         },
       },
     },

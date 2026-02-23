@@ -1,4 +1,4 @@
-/** Dashboard Page - Fully Responsive */
+/** Dashboard Page - Fully Responsive with Consistent Widths */
 
 import React, { useEffect, useState } from 'react'
 import { 
@@ -33,6 +33,7 @@ interface DashboardStats {
 const Dashboard: React.FC = () => {
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'))
   
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<DashboardStats>({
@@ -134,7 +135,7 @@ const Dashboard: React.FC = () => {
         </Typography>
       </Box>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - Full width on mobile, 2 cols on tablet, 4 cols on desktop */}
       <Grid 
         container 
         spacing={{ xs: 2, sm: 3 }} 
@@ -142,8 +143,9 @@ const Dashboard: React.FC = () => {
       >
         {statCards.map((card, index) => (
           <Grid 
+            item
             xs={12} 
-            sm={6} 
+            sm={isTablet ? 6 : 6} 
             md={3}
             key={index}
           >
@@ -198,7 +200,7 @@ const Dashboard: React.FC = () => {
         ))}
       </Grid>
 
-      {/* Data Collection Stats */}
+      {/* Data Collection Stats - Same width as other cards */}
       {stats.totalCandles > 0 && (
         <Card sx={{ mb: 3 }} elevation={3}>
           <CardContent>
@@ -210,9 +212,9 @@ const Dashboard: React.FC = () => {
               📊 Data Collection
             </Typography>
             <Grid container spacing={2}>
-              <Grid xs={12} sm={6}>
+              <Grid item xs={12} sm={6} md={4}>
                 <Box display="flex" alignItems="center" gap={2}>
-                  <StorageIcon color="primary" />
+                  <StorageIcon color="primary" fontSize="large" />
                   <Box>
                     <Typography variant="body2" color="text.secondary">
                       Total Candles
@@ -225,7 +227,7 @@ const Dashboard: React.FC = () => {
               </Grid>
             </Grid>
           </CardContent>
-          <CardActions>
+          <CardActions sx={{ px: 2, pb: 2 }}>
             <Button 
               size="small" 
               variant="outlined"
@@ -238,7 +240,7 @@ const Dashboard: React.FC = () => {
         </Card>
       )}
 
-      {/* Quick Actions */}
+      {/* Quick Actions - Same width as Data Collection */}
       <Card elevation={3}>
         <CardContent>
           <Typography 
@@ -256,7 +258,7 @@ const Dashboard: React.FC = () => {
               variant="contained" 
               startIcon={<StorageIcon />}
               href="/data-collection"
-              fullWidth={isMobile}
+              fullWidth
             >
               Data Collection
             </Button>
@@ -264,7 +266,7 @@ const Dashboard: React.FC = () => {
               variant="outlined" 
               startIcon={<PsychologyIcon />}
               href="/strategies"
-              fullWidth={isMobile}
+              fullWidth
             >
               Strategies
             </Button>
@@ -272,7 +274,7 @@ const Dashboard: React.FC = () => {
               variant="outlined" 
               startIcon={<AccountBalanceWalletIcon />}
               href="/positions"
-              fullWidth={isMobile}
+              fullWidth
             >
               Positions
             </Button>
