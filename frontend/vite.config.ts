@@ -37,5 +37,5 @@ export default defineConfig({
       },
     },
   },
-  base: '/crypto-trader/',
+  base: '/',  // Changed from '/crypto-trader/' for local dev
 })
