@@ -115,12 +115,12 @@ export const lightThemeOptions: ThemeOptions = {
       dark: '#0891b2',
     },
     background: {
-      default: '#f8fafc',
+      default: '#f1f5f9',
       paper: '#ffffff',
     },
     text: {
-      primary: '#0f172a',
-      secondary: '#64748b',
+      primary: '#1e293b',
+      secondary: '#475569',
     },
   },
   shape: {
@@ -154,6 +154,7 @@ export const lightThemeOptions: ThemeOptions = {
       styleOverrides: {
         paper: {
           backgroundColor: '#ffffff',
+          color: '#1e293b',
         },
       },
     },
@@ -161,6 +162,23 @@ export const lightThemeOptions: ThemeOptions = {
       styleOverrides: {
         root: {
           fontWeight: 600,
+        },
+      },
+    },
+    MuiTypography: {
+      styleOverrides: {
+        root: {
+          color: '#1e293b',
+        },
+      },
+    },
+    MuiListItemText: {
+      styleOverrides: {
+        primary: {
+          color: '#1e293b',
+        },
+        secondary: {
+          color: '#475569',
         },
       },
     },
