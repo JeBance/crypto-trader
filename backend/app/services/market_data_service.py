@@ -12,12 +12,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.types import Candle as CandleType, Ticker as TickerType, Trade as TradeType
 from app.plugins.base import ExchangePlugin
 from app.models.market_data import (
-    Candle as CandleModel,
     Ticker as TickerModel,
     Trade as TradeModel,
     MonitoredPair,
     DataCollectionLog,
 )
+from app.models.candle import Candle as CandleModel
 
 logger = logging.getLogger(__name__)
 

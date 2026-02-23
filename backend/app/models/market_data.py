@@ -55,77 +55,8 @@ class MonitoredPair(Base):
         return f"<MonitoredPair {self.exchange}:{self.symbol} (active={self.is_active})>"
 
 
-class Candle(Base):
-    """
-    Candlestick (OHLCV) historical data.
-    
-    Stores all available candle data for monitored pairs.
-    Data is NEVER deleted automatically.
-    """
-    
-    __tablename__ = "candles"
-    
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    exchange = Column(String(20), nullable=False)  # 'binance', 'bybit', etc.
-    symbol = Column(String(20), nullable=False, index=True)
-    timeframe = Column(String(10), nullable=False, index=True)
-    
-    # Candle data
-    timestamp = Column(DateTime, nullable=False, index=True)
-    open = Column(Float, nullable=False)
-    high = Column(Float, nullable=False)
-    low = Column(Float, nullable=False)
-    close = Column(Float, nullable=False)
-    volume = Column(Float, nullable=False, default=0.0)
-    
-    # Additional data
-    quote_volume = Column(Float, default=0.0)  # Volume in quote currency
-    trades_count = Column(Integer, default=0)  # Number of trades
-    taker_buy_volume = Column(Float, default=0.0)  # Taker buy base volume
-    taker_buy_quote_volume = Column(Float, default=0.0)  # Taker buy quote volume
-    
-    # Timestamps
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
-    
-    __table_args__ = (
-        UniqueConstraint('exchange', 'symbol', 'timeframe', 'timestamp', name='uq_candle_exchange_symbol_timeframe_timestamp'),
-        Index('idx_candle_symbol_timeframe', 'symbol', 'timeframe'),
-        Index('idx_candle_exchange_timestamp', 'exchange', 'timestamp'),
-        Index('idx_candle_full', 'exchange', 'symbol', 'timeframe', 'timestamp'),
-    )
-    
-    def __repr__(self) -> str:
-        return f"<Candle {self.exchange}:{self.symbol} {self.timeframe} {self.timestamp}>"
-    
-    @property
-    def is_bullish(self) -> bool:
-        """Check if candle is bullish (green)."""
-        return self.close > self.open
-    
-    @property
-    def is_bearish(self) -> bool:
-        """Check if candle is bearish (red)."""
-        return self.close < self.open
-    
-    @property
-    def body_size(self) -> float:
-        """Get candle body size."""
-        return abs(self.close - self.open)
-    
-    @property
-    def range_size(self) -> float:
-        """Get candle range (high - low)."""
-        return self.high - self.low
-    
-    @property
-    def upper_shadow(self) -> float:
-        """Get upper shadow size."""
-        return self.high - max(self.open, self.close)
-    
-    @property
-    def lower_shadow(self) -> float:
-        """Get lower shadow size."""
-        return min(self.open, self.close) - self.low
+# Примечание: Модель Candle уже определена в app/models/candle.py
+# Импортируйте её оттуда для использования
 
 
 class Ticker(Base):
@@ -166,58 +97,8 @@ class Ticker(Base):
         return f"<Ticker {self.exchange}:{self.symbol} @ {self.last_price}>"
 
 
-class Trade(Base):
-    """
-    Individual trade (transaction) data.
-    
-    Stores recent trades from the exchange.
-    """
-    
-    __tablename__ = "trades"
-    
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    exchange = Column(String(20), nullable=False)
-    symbol = Column(String(20), nullable=False, index=True)
-    
-    # Trade data
-    trade_id = Column(String(50), nullable=True, index=True)  # Exchange trade ID
-    order_id = Column(String(50), nullable=True, index=True)  # Related order ID
-    timestamp = Column(DateTime, nullable=False, index=True)
-    
-    side = Column(String(10), nullable=False)  # 'buy' or 'sell'
-    price = Column(Float, nullable=False)
-    quantity = Column(Float, nullable=False)
-    quote_quantity = Column(Float, nullable=True)  # Price * Quantity
-    
-    # Fee data (if available)
-    fee = Column(Float, default=0.0)
-    fee_currency = Column(String(20), nullable=True)
-    fee_in_usdt = Column(Float, default=0.0)
-    
-    # Maker/taker indicator
-    is_maker = Column(Integer, default=0)  # 1 = maker, 0 = taker
-    
-    # Timestamps
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    
-    __table_args__ = (
-        UniqueConstraint('exchange', 'trade_id', name='uq_trade_exchange_trade_id'),
-        Index('idx_trade_symbol_timestamp', 'symbol', 'timestamp'),
-        Index('idx_trade_exchange_timestamp', 'exchange', 'timestamp'),
-    )
-    
-    def __repr__(self) -> str:
-        return f"<Trade {self.exchange}:{self.symbol} {self.side} {self.quantity}@{self.price}>"
-    
-    @property
-    def total_value(self) -> float:
-        """Get total trade value."""
-        return self.quantity * self.price
-    
-    @property
-    def net_value(self) -> float:
-        """Get net value after fees."""
-        return self.total_value - (self.fee_in_usdt or 0)
+# Примечание: Trade модель уже определена в app/models/trade.py для локальных сделок
+# Для внешних сделок с бирж используем ExternalTrade если нужно, или просто собираем в память
 
 
 class OrderBookSnapshot(Base):

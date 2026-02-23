@@ -12,10 +12,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models.market_data import (
     MonitoredPair,
-    Candle,
     Ticker,
     DataCollectionLog,
 )
+from app.models.candle import Candle
 
 logger = logging.getLogger(__name__)
 

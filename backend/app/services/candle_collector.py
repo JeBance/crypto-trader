@@ -10,7 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.types import Candle as CandleType
 from app.plugins.base import ExchangePlugin
-from app.models.market_data import MonitoredPair, Candle, DataCollectionLog
+from app.models.market_data import MonitoredPair, DataCollectionLog
+from app.models.candle import Candle
 from app.services.market_data_service import MarketDataService
 
 logger = logging.getLogger(__name__)

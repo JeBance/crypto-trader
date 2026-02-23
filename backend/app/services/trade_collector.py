@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
 from app.plugins.base import ExchangePlugin
-from app.models.market_data import Trade, MonitoredPair
+from app.models.market_data import MonitoredPair
 
 logger = logging.getLogger(__name__)
 
@@ -235,6 +235,7 @@ class TradeCollector:
         """Save trades to database."""
         try:
             from sqlalchemy import inspect
+            from app.models.trade import Trade as TradeModel
             
             # Check if session is still valid
             if not inspect(self.db_session).is_active:
@@ -244,18 +245,16 @@ class TradeCollector:
             for trade_data in trades:
                 # Convert to Trade model
                 # Handle different trade data formats
-                trade = Trade(
-                    exchange=self.exchange_name,
+                trade = TradeModel(
+                    order_id=0,  # No order relation for external trades
+                    exchange_trade_id=str(trade_data.trade_id if hasattr(trade_data, 'trade_id') else trade_data.get('trade_id', '')),
                     symbol=trade_data.symbol if hasattr(trade_data, 'symbol') else trade_data.get('symbol', ''),
-                    trade_id=str(trade_data.trade_id if hasattr(trade_data, 'trade_id') else trade_data.get('trade_id', '')),
-                    order_id=str(trade_data.order_id if hasattr(trade_data, 'order_id') else trade_data.get('order_id', '')),
-                    timestamp=trade_data.timestamp if hasattr(trade_data, 'timestamp') else trade_data.get('timestamp', datetime.now(timezone.utc)),
                     side=trade_data.side if hasattr(trade_data, 'side') else trade_data.get('side', 'buy'),
-                    price=trade_data.price if hasattr(trade_data, 'price') else trade_data.get('price', 0.0),
                     quantity=trade_data.quantity if hasattr(trade_data, 'quantity') else trade_data.get('quantity', 0.0),
+                    price=trade_data.price if hasattr(trade_data, 'price') else trade_data.get('price', 0.0),
                     fee=trade_data.fee if hasattr(trade_data, 'fee') else trade_data.get('fee', 0.0),
                     fee_currency=trade_data.fee_currency if hasattr(trade_data, 'fee_currency') else trade_data.get('fee_currency'),
-                    is_maker=1 if (hasattr(trade_data, 'is_maker') and trade_data.is_maker) else 0,
+                    executed_at=trade_data.timestamp if hasattr(trade_data, 'timestamp') else trade_data.get('timestamp', datetime.now(timezone.utc)),
                 )
                 
                 self.db_session.add(trade)
