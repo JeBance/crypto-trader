@@ -64,6 +64,7 @@ class AppState:
         self.notifier: NotifierPlugin | None = None
         self.strategy_executor = None
         self.data_service = None
+        self.data_collection_manager = None  # NEW: Data collection manager
         self.db_session = None
         self.start_time: datetime | None = None
         self.restart_pending: bool = False
@@ -273,13 +274,23 @@ async def initialize_plugins() -> None:
 async def initialize_services() -> None:
     """Initialize core services."""
     logger.info("Initializing services...")
-    
+
     if app_state.exchange:
         # Initialize Data Service
         from app.services.data_service import DataService
         app_state.data_service = DataService(app_state.exchange)
         logger.info("Data Service initialized")
-        
+
+        # Initialize Data Collection Manager (for market data)
+        from app.services.data_collection_manager import DataCollectionManager
+        app_state.data_collection_manager = DataCollectionManager(
+            exchange=app_state.exchange,
+            db_session=app_state.db_session,
+            exchange_name=app_state.exchange.name,
+        )
+        await app_state.data_collection_manager.start()
+        logger.info("✅ Data Collection Manager initialized")
+
         # Initialize Strategy Executor
         from app.services.strategy_executor import StrategyExecutor
         app_state.strategy_executor = StrategyExecutor(
@@ -294,13 +305,18 @@ async def initialize_services() -> None:
 async def cleanup_plugins() -> None:
     """Cleanup all plugins on shutdown."""
     logger.info("Cleaning up plugins...")
-    
+
     if app_state.strategy_executor:
         await app_state.strategy_executor.stop()
-    
+
+    # Stop data collection manager
+    if app_state.data_collection_manager:
+        await app_state.data_collection_manager.stop()
+        logger.info("Data Collection Manager stopped")
+
     if app_state.plugin_manager:
         await app_state.plugin_manager.shutdown_all()
-    
+
     logger.info("Cleanup complete")
 
 
@@ -308,7 +324,7 @@ async def cleanup_plugins() -> None:
 async def lifespan(app: FastAPI):
     """Application lifespan events."""
     global _startup_time
-    
+
     # Startup
     logger.info("🚀 Crypto Trader starting up...")
     _startup_time = datetime.utcnow()
@@ -321,6 +337,11 @@ async def lifespan(app: FastAPI):
         # Initialize database
         await init_db()
         logger.info("✅ Database initialized")
+
+        # Create database session
+        from app.database import AsyncSessionLocal
+        app_state.db_session = AsyncSessionLocal()
+        logger.info("Database session created")
 
         # Initialize plugins
         await initialize_plugins()
@@ -355,6 +376,11 @@ async def lifespan(app: FastAPI):
 
     await cleanup_plugins()
 
+    # Close database session
+    if app_state.db_session:
+        await app_state.db_session.close()
+        logger.info("Database session closed")
+
 
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
@@ -384,6 +410,7 @@ def create_app() -> FastAPI:
     from app.api.positions import router as positions_router
     from app.api.strategies import router as strategies_router
     from app.api.server import router as server_router
+    from app.api.market_data import router as market_data_router
     from app.websocket.routes import router as websocket_router
 
     app.include_router(health_router)
@@ -392,6 +419,7 @@ def create_app() -> FastAPI:
     app.include_router(positions_router)
     app.include_router(strategies_router)
     app.include_router(server_router)
+    app.include_router(market_data_router)
     app.include_router(websocket_router)
     
     # Mount static files (for frontend)

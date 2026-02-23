@@ -48,6 +48,6 @@ async def init_db() -> None:
     """Initialize database - create tables."""
     async with engine.begin() as conn:
         # Import all models to ensure they are registered
-        from app.models import candle, order, position, trade  # noqa: F401
-        
+        from app.models import candle, order, position, trade, market_data  # noqa: F401
+
         await conn.run_sync(Base.metadata.create_all)
