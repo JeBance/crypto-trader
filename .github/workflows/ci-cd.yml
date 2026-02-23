@@ -30,10 +30,6 @@ jobs:
     
     - name: Install dependencies
       run: |
-        # Install TA-Lib C library from Ubuntu repo
-        sudo apt-get update
-        sudo apt-get install -y libta-lib-dev
-        
         # Install Python dependencies
         python -m pip install --upgrade pip
         pip install -r backend/requirements.txt
