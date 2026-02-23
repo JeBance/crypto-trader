@@ -6,7 +6,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Depends
 from pydantic import BaseModel, Field
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, func, and_, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -27,6 +27,7 @@ router = APIRouter(prefix="/api/market-data", tags=["Market Data"])
 class MonitoredPairRequest(BaseModel):
     """Request to add/update monitored pair."""
     symbol: str = Field(..., description="Trading pair symbol (e.g., 'BTCUSDT')")
+    exchange: str = Field(default="binance", description="Exchange name (binance, bybit)")
     timeframes: List[str] = Field(..., description="List of timeframes (e.g., ['1h', '4h', '1d'])")
     is_active: bool = Field(default=True, description="Whether to actively collect data")
 
@@ -122,12 +123,11 @@ async def get_monitored_pairs(
 @router.post("/monitored-pairs", response_model=MonitoredPairResponse)
 async def add_monitored_pair(
     request: MonitoredPairRequest,
-    exchange: str = Depends(get_current_exchange),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Add a trading pair to monitored list.
-    
+
     Starts collecting candle data for the specified symbol and timeframes.
     Data will be collected continuously in the background.
     """
@@ -135,14 +135,14 @@ async def add_monitored_pair(
     result = await db.execute(
         select(MonitoredPair).where(
             and_(
-                MonitoredPair.exchange == exchange,
+                MonitoredPair.exchange == request.exchange,
                 MonitoredPair.symbol == request.symbol,
             )
         )
     )
-    
+
     pair = result.scalar_one_or_none()
-    
+
     if pair:
         # Update existing
         pair.timeframes = ",".join(request.timeframes)
@@ -151,18 +151,18 @@ async def add_monitored_pair(
     else:
         # Create new
         pair = MonitoredPair(
-            exchange=exchange,
+            exchange=request.exchange,
             symbol=request.symbol,
             timeframes=",".join(request.timeframes),
             is_active=1 if request.is_active else 0,
         )
         db.add(pair)
-    
+
     await db.commit()
     await db.refresh(pair)
-    
-    logger.info(f"Added monitored pair: {exchange}:{request.symbol}")
-    
+
+    logger.info(f"Added monitored pair: {request.exchange}:{request.symbol}")
+
     return MonitoredPairResponse(
         id=pair.id,
         exchange=pair.exchange,
@@ -175,15 +175,60 @@ async def add_monitored_pair(
     )
 
 
-@router.delete("/monitored-pairs/{symbol}")
-async def remove_monitored_pair(
+@router.put("/monitored-pairs/{symbol}", response_model=MonitoredPairResponse)
+async def update_monitored_pair(
     symbol: str,
-    exchange: str = Depends(get_current_exchange),
+    request: MonitoredPairRequest,
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Remove a pair from monitored list.
-    
+    Update a monitored pair.
+    """
+    result = await db.execute(
+        select(MonitoredPair).where(
+            and_(
+                MonitoredPair.exchange == request.exchange,
+                MonitoredPair.symbol == symbol,
+            )
+        )
+    )
+
+    pair = result.scalar_one_or_none()
+
+    if not pair:
+        raise HTTPException(status_code=404, detail=f"Pair {request.exchange}:{symbol} not found")
+
+    # Update fields
+    pair.timeframes = ",".join(request.timeframes)
+    pair.is_active = 1 if request.is_active else 0
+    pair.updated_at = datetime.utcnow()
+
+    await db.commit()
+    await db.refresh(pair)
+
+    logger.info(f"Updated monitored pair: {request.exchange}:{symbol}")
+
+    return MonitoredPairResponse(
+        id=pair.id,
+        exchange=pair.exchange,
+        symbol=pair.symbol,
+        timeframes=pair.timeframes.split(",") if pair.timeframes else [],
+        is_active=bool(pair.is_active),
+        created_at=pair.created_at,
+        updated_at=pair.updated_at,
+        last_data_at=pair.last_data_at,
+    )
+
+
+@router.delete("/monitored-pairs/{exchange}/{symbol}")
+async def remove_monitored_pair(
+    symbol: str,
+    exchange: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Remove a pair from monitored list (soft delete).
+
     NOTE: This does NOT delete historical data!
     It only stops future data collection.
     """
@@ -195,32 +240,78 @@ async def remove_monitored_pair(
             )
         )
     )
-    
+
     pair = result.scalar_one_or_none()
-    
+
     if not pair:
-        raise HTTPException(status_code=404, detail=f"Pair {symbol} not found")
-    
+        raise HTTPException(status_code=404, detail=f"Pair {exchange}:{symbol} not found")
+
     # Deactivate (don't delete)
     pair.is_active = 0
     pair.updated_at = datetime.utcnow()
-    
+
     await db.commit()
-    
+
     logger.info(f"Removed monitored pair: {exchange}:{symbol} (data preserved)")
-    
-    return {"message": f"Pair {symbol} removed from monitoring (historical data preserved)"}
+
+    return {"message": f"Pair {exchange}:{symbol} removed from monitoring (historical data preserved)"}
 
 
-@router.post("/monitored-pairs/{symbol}/resume")
+@router.delete("/monitored-pairs/{exchange}/{symbol}/hard")
+async def delete_monitored_pair_completely(
+    symbol: str,
+    exchange: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Delete a pair completely (HARD DELETE).
+
+    WARNING: This WILL delete all historical data!
+    """
+    result = await db.execute(
+        select(MonitoredPair).where(
+            and_(
+                MonitoredPair.exchange == exchange,
+                MonitoredPair.symbol == symbol,
+            )
+        )
+    )
+
+    pair = result.scalar_one_or_none()
+
+    if not pair:
+        raise HTTPException(status_code=404, detail=f"Pair {exchange}:{symbol} not found")
+
+    # Delete the pair
+    await db.delete(pair)
+
+    # Delete all historical data for this pair
+    from app.models.candle import Candle
+    await db.execute(
+        delete(Candle).where(
+            and_(
+                Candle.exchange == exchange,
+                Candle.symbol == symbol,
+            )
+        )
+    )
+
+    await db.commit()
+
+    logger.warning(f"Deleted monitored pair completely: {exchange}:{symbol} (ALL DATA DELETED)")
+
+    return {"message": f"Pair {exchange}:{symbol} deleted completely (all historical data removed)"}
+
+
+@router.post("/monitored-pairs/{exchange}/{symbol}/resume")
 async def resume_monitored_pair(
     symbol: str,
-    exchange: str = Depends(get_current_exchange),
+    exchange: str,
     db: AsyncSession = Depends(get_db),
 ):
     """
     Resume monitoring for a previously monitored pair.
-    
+
     Will automatically backfill missing data.
     """
     result = await db.execute(
@@ -231,7 +322,7 @@ async def resume_monitored_pair(
             )
         )
     )
-    
+
     pair = result.scalar_one_or_none()
     
     if not pair:

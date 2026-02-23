@@ -27,6 +27,11 @@ import {
   CircularProgress,
   IconButton,
   Tooltip,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -35,6 +40,7 @@ import {
   PlayArrow as PlayArrowIcon,
   Delete as DeleteIcon,
   Info as InfoIcon,
+  Edit as EditIcon,
 } from '@mui/icons-material';
 
 // API types
@@ -78,41 +84,49 @@ const DataCollectionPage: React.FC = () => {
   const [logs, setLogs] = useState<CollectionLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Dialog state
   const [openDialog, setOpenDialog] = useState(false);
+  const [editingPair, setEditingPair] = useState<MonitoredPair | null>(null);
   const [newSymbol, setNewSymbol] = useState('');
+  const [newExchange, setNewExchange] = useState('binance');
   const [newTimeframes, setNewTimeframes] = useState<string[]>(['1h', '4h', '1d']);
-  
+
   // Timeframe options
   const timeframeOptions = ['1m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '12h', '1d', '1w'];
+
+  // Exchange options
+  const exchangeOptions = [
+    { value: 'binance', label: 'Binance' },
+    { value: 'bybit', label: 'Bybit' },
+  ];
 
   // Fetch data
   const fetchData = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch monitored pairs
       const pairsResponse = await fetch('/api/market-data/monitored-pairs');
       if (pairsResponse.ok) {
         const pairsData = await pairsResponse.json();
         setMonitoredPairs(pairsData);
       }
-      
+
       // Fetch stats
       const statsResponse = await fetch('/api/market-data/stats');
       if (statsResponse.ok) {
         const statsData = await statsResponse.json();
         setStats(statsData);
       }
-      
+
       // Fetch logs
       const logsResponse = await fetch('/api/market-data/logs?limit=20');
       if (logsResponse.ok) {
         const logsData = await logsResponse.json();
         setLogs(logsData);
       }
-      
+
       setError(null);
     } catch (err) {
       setError('Failed to fetch data collection information');
@@ -128,20 +142,45 @@ const DataCollectionPage: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Add monitored pair
-  const handleAddPair = async () => {
+  // Open dialog for adding pair
+  const handleOpenAddDialog = () => {
+    setEditingPair(null);
+    setNewSymbol('');
+    setNewExchange('binance');
+    setNewTimeframes(['1h', '4h', '1d']);
+    setOpenDialog(true);
+  };
+
+  // Open dialog for editing pair
+  const handleOpenEditDialog = (pair: MonitoredPair) => {
+    setEditingPair(pair);
+    setNewSymbol(pair.symbol);
+    setNewExchange(pair.exchange);
+    setNewTimeframes(pair.timeframes);
+    setOpenDialog(true);
+  };
+
+  // Add/Edit monitored pair
+  const handleSavePair = async () => {
     if (!newSymbol.trim()) {
       return;
     }
 
     try {
-      const response = await fetch('/api/market-data/monitored-pairs', {
-        method: 'POST',
+      const url = editingPair
+        ? `/api/market-data/monitored-pairs/${editingPair.symbol}`
+        : '/api/market-data/monitored-pairs';
+      
+      const method = editingPair ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           symbol: newSymbol.toUpperCase(),
+          exchange: newExchange,
           timeframes: newTimeframes,
           is_active: true,
         }),
@@ -150,25 +189,48 @@ const DataCollectionPage: React.FC = () => {
       if (response.ok) {
         setNewSymbol('');
         setOpenDialog(false);
+        setEditingPair(null);
         fetchData();
       } else {
         const errorData = await response.json();
-        setError(`Failed to add pair: ${errorData.detail || 'Unknown error'}`);
+        setError(`Failed to save pair: ${errorData.detail || 'Unknown error'}`);
       }
     } catch (err) {
-      setError('Failed to add pair');
+      setError('Failed to save pair');
       console.error(err);
     }
   };
 
-  // Remove monitored pair
-  const handleRemovePair = async (symbol: string) => {
-    if (!confirm(`Stop monitoring ${symbol}? Historical data will be preserved.`)) {
+  // Delete monitored pair (hard delete)
+  const handleDeletePair = async (symbol: string, exchange: string) => {
+    if (!confirm(`Delete ${exchange}:${symbol} completely? Historical data will be DELETED!`)) {
       return;
     }
 
     try {
-      const response = await fetch(`/api/market-data/monitored-pairs/${symbol}`, {
+      const response = await fetch(`/api/market-data/monitored-pairs/${exchange}/${symbol}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        fetchData();
+      } else {
+        setError('Failed to delete pair');
+      }
+    } catch (err) {
+      setError('Failed to delete pair');
+      console.error(err);
+    }
+  };
+
+  // Remove monitored pair (soft delete - pause monitoring)
+  const handleRemovePair = async (symbol: string, exchange: string) => {
+    if (!confirm(`Stop monitoring ${exchange}:${symbol}? Historical data will be preserved.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/market-data/monitored-pairs/${exchange}/${symbol}`, {
         method: 'DELETE',
       });
 
@@ -245,7 +307,7 @@ const DataCollectionPage: React.FC = () => {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => setOpenDialog(true)}
+            onClick={handleOpenAddDialog}
           >
             Add Pair
           </Button>
@@ -333,8 +395,8 @@ const DataCollectionPage: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Symbol</TableCell>
               <TableCell>Exchange</TableCell>
+              <TableCell>Symbol</TableCell>
               <TableCell>Timeframes</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Last Data</TableCell>
@@ -355,15 +417,21 @@ const DataCollectionPage: React.FC = () => {
               monitoredPairs.map((pair) => (
                 <TableRow key={pair.id}>
                   <TableCell>
+                    <Chip 
+                      label={pair.exchange} 
+                      size="small" 
+                      color={pair.exchange === 'binance' ? 'warning' : 'default'}
+                    />
+                  </TableCell>
+                  <TableCell>
                     <Typography variant="body2" fontWeight="bold">
                       {pair.symbol}
                     </Typography>
                   </TableCell>
-                  <TableCell>{pair.exchange}</TableCell>
                   <TableCell>
                     <Box display="flex" gap={0.5} flexWrap="wrap">
                       {pair.timeframes.map((tf) => (
-                        <Chip key={tf} label={tf} size="small" />
+                        <Chip key={tf} label={tf} size="small" variant="outlined" />
                       ))}
                     </Box>
                   </TableCell>
@@ -377,13 +445,22 @@ const DataCollectionPage: React.FC = () => {
                   <TableCell>{formatDate(pair.last_data_at)}</TableCell>
                   <TableCell>{formatDate(pair.created_at)}</TableCell>
                   <TableCell>
-                    <Box display="flex" gap={1}>
+                    <Box display="flex" gap={0.5}>
+                      <Tooltip title="Edit pair">
+                        <IconButton
+                          size="small"
+                          color="primary"
+                          onClick={() => handleOpenEditDialog(pair)}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
                       {pair.is_active ? (
                         <Tooltip title="Stop monitoring (data preserved)">
                           <IconButton
                             size="small"
                             color="warning"
-                            onClick={() => handleRemovePair(pair.symbol)}
+                            onClick={() => handleRemovePair(pair.symbol, pair.exchange)}
                           >
                             <PauseIcon />
                           </IconButton>
@@ -393,12 +470,21 @@ const DataCollectionPage: React.FC = () => {
                           <IconButton
                             size="small"
                             color="success"
-                            onClick={() => handleResumePair(pair.symbol)}
+                            onClick={() => handleResumePair(pair.symbol, pair.exchange)}
                           >
                             <PlayArrowIcon />
                           </IconButton>
                         </Tooltip>
                       )}
+                      <Tooltip title="Delete completely (data will be deleted!)">
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => handleDeletePair(pair.symbol, pair.exchange)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </TableCell>
                 </TableRow>
@@ -453,47 +539,90 @@ const DataCollectionPage: React.FC = () => {
         </Table>
       </TableContainer>
 
-      {/* Add Pair Dialog */}
+      {/* Add/Edit Pair Dialog */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Add Monitored Pair</DialogTitle>
+        <DialogTitle>
+          {editingPair ? `Edit ${editingPair.exchange}:${editingPair.symbol}` : 'Add Monitored Pair'}
+        </DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
+            {/* Exchange Selection */}
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel>Exchange</InputLabel>
+              <Select
+                value={newExchange}
+                label="Exchange"
+                onChange={(e: SelectChangeEvent) => setNewExchange(e.target.value)}
+              >
+                {exchangeOptions.map((ex) => (
+                  <MenuItem key={ex.value} value={ex.value}>
+                    {ex.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Symbol */}
             <TextField
               fullWidth
               label="Symbol"
               placeholder="BTCUSDT"
               value={newSymbol}
-              onChange={(e) => setNewSymbol(e.target.value)}
-              sx={{ mb: 3 }}
+              onChange={(e) => setNewSymbol(e.target.value.toUpperCase())}
+              sx={{ mb: 2 }}
             />
 
+            {/* Timeframes */}
             <Typography variant="subtitle2" gutterBottom>
               Timeframes
             </Typography>
-            <Box display="flex" flexWrap="wrap" gap={1}>
+            <Box display="flex" flexWrap="wrap" gap={1} sx={{ mb: 2 }}>
               {timeframeOptions.map((tf) => (
                 <Chip
                   key={tf}
                   label={tf}
-                  onClick={() => toggleTimeframe(tf)}
+                  onClick={() => {
+                    setNewTimeframes(prev =>
+                      prev.includes(tf)
+                        ? prev.filter(t => t !== tf)
+                        : [...prev, tf]
+                    );
+                  }}
                   color={newTimeframes.includes(tf) ? 'primary' : 'default'}
                   variant={newTimeframes.includes(tf) ? 'filled' : 'outlined'}
                 />
               ))}
             </Box>
 
-            <Alert severity="info" sx={{ mt: 3 }}>
+            <Alert severity="info" sx={{ mt: 2 }}>
               <Typography variant="caption">
-                Data will be collected continuously and stored permanently in the database.
-                You can stop monitoring at any time - historical data will be preserved.
+                {editingPair 
+                  ? 'Changes will be saved. Historical data will be preserved.'
+                  : 'Data will be collected continuously and stored permanently. You can stop monitoring at any time.'}
               </Typography>
             </Alert>
           </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-          <Button onClick={handleAddPair} variant="contained" disabled={!newSymbol.trim()}>
-            Add Pair
+          {editingPair && (
+            <Button 
+              onClick={() => {
+                handleDeletePair(editingPair.symbol, editingPair.exchange);
+                setOpenDialog(false);
+              }} 
+              color="error"
+              variant="outlined"
+            >
+              Delete
+            </Button>
+          )}
+          <Button 
+            onClick={handleSavePair} 
+            variant="contained" 
+            disabled={!newSymbol.trim() || newTimeframes.length === 0}
+          >
+            {editingPair ? 'Save Changes' : 'Add Pair'}
           </Button>
         </DialogActions>
       </Dialog>
