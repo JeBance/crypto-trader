@@ -15,7 +15,7 @@ aiohttp==3.9.1
 # Data & Analysis
 pandas==2.2.0
 numpy==1.26.3
-# ta-lib==0.4.28  # Requires system library, install manually if needed
+ta-lib==0.4.28
 
 # Configuration
 pydantic==2.5.3
